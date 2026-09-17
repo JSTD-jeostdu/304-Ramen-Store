@@ -114,6 +114,9 @@
   .status.waiting { background: var(--warn); }
   .status.ready { background: var(--ok); }
   .status.cancelled { background: #868e96; }
+  .status.picked { background: var(--info); }
+  .memo { background: #fff3bf; color: #5c3c00; border-radius: 8px; padding: 4px 8px; font-size: 15px; font-weight: 700; margin: 4px 0; }
+  .btn.blue { background: var(--info); color: #fff; }
 
   /* ---------- 조리대 ---------- */
   .kitchen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
@@ -128,6 +131,12 @@
   .k-card li { padding: 4px 0; display: flex; justify-content: space-between; }
   .k-card .ready-btn { padding: 20px; font-size: 24px; font-weight: 900; border-radius: 14px; background: var(--ok); color: #fff; }
   .empty { text-align: center; color: var(--muted); font-size: 24px; padding: 60px 0; }
+  .empty.small { font-size: 18px; padding: 20px 0; }
+  .k-section { margin: 28px 0 12px; font-size: 22px; }
+  .k-section small { font-size: 15px; color: var(--muted); font-weight: 400; }
+  .k-card.pickup .no { font-size: 40px; }
+  .k-card.pickup ul { font-size: 18px; }
+  .k-card .ready-btn.pick { background: var(--info); }
   .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   .summary-bar .chip { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; padding: 8px 14px; font-size: 18px; font-weight: 700; }
 
@@ -186,6 +195,65 @@
   .bar .val { font-size: 11px; color: var(--ink); margin-bottom: 2px; white-space: nowrap; }
   .bar .t { font-size: 12px; color: var(--muted); margin-top: 4px; white-space: nowrap; }
   .scroll-x { overflow-x: auto; }
+
+  /* ---------- 매니저 ---------- */
+  .mgr-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
+  .mgr-count { background: var(--panel); border: 3px solid var(--line); border-radius: 14px; padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 17px; }
+  .mgr-count b { font-size: 32px; font-weight: 900; }
+  .mgr-count.waiting { border-color: #ffc078; }
+  .mgr-count.ready { border-color: #74c0fc; }
+  .mgr-count.picked { border-color: #8ce99a; }
+  .mgr-count.cancelled { border-color: #ced4da; color: var(--muted); }
+  .mgr-alerts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .alert { padding: 8px 12px; border-radius: 10px; font-weight: 700; font-size: 15px; }
+  .alert.red { background: #ffe3e3; color: var(--danger); }
+  .alert.amber { background: #fff3bf; color: #8f5d00; }
+  .alert.gray { background: #e9ecef; color: #495057; }
+  .alert.ok { background: #ebfbee; color: var(--ok); }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { padding: 10px 14px; border-radius: 10px; background: #e9e2d8; font-weight: 700; font-size: 15px; }
+  .seg button.on { background: var(--ink); color: #fff; }
+  .mgr-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; align-items: center; }
+  .mgr-controls input { padding: 12px; border: 2px solid var(--line); border-radius: 10px; font-size: 17px; flex: 1; min-width: 220px; }
+  .mgr-colpick { display: none; margin-bottom: 12px; }
+  .mgr-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; }
+  .mgr-col { background: #f3ebe0; border-radius: 16px; padding: 10px; min-height: 160px; }
+  .mgr-col h3 { margin: 4px 4px 10px; display: flex; justify-content: space-between; font-size: 19px; }
+  .mgr-col .none { color: var(--muted); text-align: center; padding: 16px 0; font-size: 15px; }
+  .m-card { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; cursor: pointer; }
+  .m-card:active { border-color: var(--brand); }
+  .m-card.late { border-color: var(--danger); background: #fff5f5; }
+  .m-head { display: flex; align-items: baseline; gap: 8px; }
+  .m-no { font-size: 30px; font-weight: 900; line-height: 1; }
+  .m-reg { font-size: 13px; color: var(--muted); background: #f1ebe3; border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
+  .m-head .m-time { margin-left: auto; }
+  .m-time { font-size: 14px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .late .m-time { color: var(--danger); }
+  .m-items { font-size: 17px; font-weight: 700; margin: 6px 0; line-height: 1.4; }
+  .m-actions { display: flex; gap: 6px; margin-top: 6px; }
+  .m-actions .btn { flex: 1; padding: 12px 6px; font-size: 16px; }
+  .mgr-table tbody tr { cursor: pointer; }
+  .mgr-table tbody tr.late td { background: #fff5f5; }
+  .modal.wide { width: min(640px, 100%); }
+  .d-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .d-no { font-size: 42px; font-weight: 900; }
+  .timeline { list-style: none; padding: 0; margin: 0; font-size: 17px; }
+  .timeline li { padding: 7px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .timeline li b { margin-left: auto; }
+  .timeline li small { width: 100%; color: var(--muted); }
+  .d-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .d-actions .btn { padding: 14px 8px; font-size: 17px; }
+  @media (max-width: 760px) {
+    .mgr-summary { grid-template-columns: repeat(2, 1fr); }
+    .mgr-colpick { display: block; }
+    .mgr-board { grid-template-columns: 1fr; }
+    .mgr-board .mgr-col { display: none; }
+    .mgr-board[data-col="waiting"] .mgr-col.waiting,
+    .mgr-board[data-col="ready"] .mgr-col.ready,
+    .mgr-board[data-col="picked"] .mgr-col.picked { display: block; }
+    .mgr-table .hide-sm { display: none; }
+    .d-actions { grid-template-columns: 1fr; }
+  }
 
   /* ---------- 모달 / 토스트 ---------- */
   .modal-back { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -250,6 +318,7 @@ const CONFIG = {
     ttsVolume: 1.0,                        // 음성 볼륨 (0 ~ 1)
     chime: true,                           // 차임음 사용 여부
     lateMinutes: 5,                        // 조리 지연 강조 기준 (분)
+    pickupLateMinutes: 3,                  // 미수령 강조 기준 (조리 완료 후, 분)
     threshold: 10,                         // 재고 부족 경고 기본 임계값
   },
   undoSeconds: 6,                          // "준비 완료" 되돌리기 가능 시간 (초)
@@ -277,6 +346,7 @@ const ROLES = {
   ])),
   kitchen: { label: '조리대', icon: '🍳', desc: '대기 주문 · 준비 완료' },
   display: { label: '호출',   icon: '📢', desc: '손님용 번호 호출 화면' },
+  manager: { label: '매니저', icon: '🧑‍🏫', desc: '결제부터 수령까지 전체 주문 관리' },
   admin:   { label: '설정·정산', icon: '⚙️', desc: '메뉴·재고·매출 관리' },
 };
 
@@ -409,10 +479,16 @@ async function createFirestoreBackend() {
       });
     },
 
-    async setReady(orderId, ready) {
-      await F.updateDoc(ref('orders', orderId), ready
-        ? { status: 'ready', readyAt: Date.now() }
-        : { status: 'waiting', readyAt: null });
+    // 주문 상태·메모 변경: 현재 상태가 from 목록에 있을 때만 반영
+    // (다른 기기에서 방금 취소·수령 처리한 주문을 덮어쓰지 않도록 트랜잭션으로 확인)
+    async updateOrder(orderId, fields, from) {
+      await F.runTransaction(db, async (tx) => {
+        const oRef = ref('orders', orderId);
+        const snap = await tx.get(oRef);
+        if (!snap.exists()) throw new Error('주문을 찾을 수 없습니다.');
+        if (from && !from.includes(snap.data().status)) throw new Error('다른 기기에서 이미 상태가 바뀌었습니다. 화면을 확인해 주세요.');
+        tx.update(oRef, fields);
+      });
     },
 
     async addMenu(data) {
@@ -528,10 +604,12 @@ function createLocalBackend() {
         o.items.forEach((i) => { if (db.menus[i.menuId]) db.menus[i.menuId].stockCurrent += i.qty; });
       });
     },
-    async setReady(orderId, ready) {
+    async updateOrder(orderId, fields, from) {
       mutate((db) => {
-        const o = db.orders[orderId]; if (!o) return;
-        Object.assign(o, ready ? { status: 'ready', readyAt: Date.now() } : { status: 'waiting', readyAt: null });
+        const o = db.orders[orderId];
+        if (!o) throw new Error('주문을 찾을 수 없습니다.');
+        if (from && !from.includes(o.status)) throw new Error('다른 기기에서 이미 상태가 바뀌었습니다. 화면을 확인해 주세요.');
+        Object.assign(o, fields);
       });
     },
     async addMenu(data) { mutate((db) => { db.menus[uid()] = data; }); },
@@ -694,6 +772,100 @@ const allReady = () => S.ready.menus && S.ready.orders && S.ready.settings;
 const loadingHtml = '<div class="empty">데이터 불러오는 중…</div>';
 
 /* =====================================================================
+   주문 진행 단계 공통 처리 (조리대·매니저 화면이 함께 사용)
+   조리 중(waiting) → 수령 대기(ready) → 수령 완료(picked)  /  취소(cancelled)
+   ===================================================================== */
+const STATUS_TEXT = { waiting: '조리 중', ready: '수령 대기', picked: '수령 완료', cancelled: '취소됨' };
+const dur = (ms) => {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return s >= 3600 ? `${Math.floor(s / 3600)}시간 ${Math.floor((s % 3600) / 60)}분` : `${Math.floor(s / 60)}분 ${pad2(s % 60)}초`;
+};
+const clockStr = (ms) => { const d = new Date(ms); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; };
+const callAt = (o) => Math.max(o.readyAt || 0, o.recallAt || 0);   // 마지막으로 호출된 시각
+
+// 동작별로 바꿀 필드와, 그 동작이 허용되는 현재 상태
+const OrderOps = {
+  ready:   (id) => DB.updateOrder(id, { status: 'ready', readyAt: Date.now(), pickedAt: null, recallAt: null }, ['waiting']),
+  unready: (id) => DB.updateOrder(id, { status: 'waiting', readyAt: null, pickedAt: null, recallAt: null }, ['ready']),
+  pick:    (id) => DB.updateOrder(id, { status: 'picked', pickedAt: Date.now() }, ['ready']),
+  unpick:  (id) => DB.updateOrder(id, { status: 'ready', pickedAt: null }, ['picked']),
+  recall:  (id) => DB.updateOrder(id, { recallAt: Date.now() }, ['ready']),
+  memo:    (id, memo) => DB.updateOrder(id, { memo }),
+};
+
+// 버튼 동작 + 결과 안내 (준비 완료·수령 완료는 몇 초간 되돌리기 가능)
+async function orderAction(kind, id) {
+  const o = S.orders.find((x) => x.id === id);
+  if (!o) return;
+  const no = o.orderNo;
+  try {
+    await OrderOps[kind](id);
+  } catch (e) {
+    console.error(e);
+    toast(`처리 실패: ${e.message}`, { ms: 5000 });
+    return;
+  }
+  const text = {
+    ready: `${no}번 준비 완료 → 호출했습니다`,
+    unready: `${no}번을 조리 중으로 되돌렸습니다`,
+    pick: `${no}번 수령 완료`,
+    unpick: `${no}번을 수령 대기로 되돌렸습니다`,
+    recall: `${no}번을 다시 호출했습니다`,
+  }[kind];
+  const undo = { ready: 'unready', pick: 'unpick' }[kind];
+  toast(text, undo ? {
+    actionText: '되돌리기',
+    ms: CONFIG.undoSeconds * 1000,
+    onAction: () => run(() => OrderOps[undo](id), `${no}번을 되돌렸습니다`),
+  } : {});
+}
+
+// 주문 취소 (결제·매니저 화면 공용)
+async function cancelOrderFlow(id) {
+  const o = S.orders.find((x) => x.id === id);
+  if (!o) return;
+  const warn = {
+    ready: '\n\n⚠️ 이미 조리가 끝난 주문입니다.',
+    picked: '\n\n⚠️ 손님이 이미 받아 간 주문입니다.\n재고가 복구되므로, 라면을 먹었다면 보충·폐기 탭에서 폐기로 기록하세요.',
+  }[o.status] || '';
+  const ok = await confirmModal({
+    title: `${o.orderNo}번 주문 취소`,
+    msg: `${esc(itemsText(o.items))}\n${money(o.total)} 을(를) 환불하고 재고를 복구합니다.${warn}`,
+    okText: '주문 취소', okClass: 'danger', cancelText: '닫기',
+  });
+  if (ok) await run(() => DB.cancelOrder(id), `${o.orderNo}번 주문이 취소되었습니다.`);
+}
+
+// 메모 입력 모달 → 문자열 / null(취소)
+function memoModal(o) {
+  return new Promise((resolve) => {
+    const presets = ['덜 맵게', '계란 추가', '국물 적게', '포장', '환불 요청', '서비스 제공'];
+    const m = openModal(`
+      <h2>${o.orderNo}번 메모</h2>
+      <textarea id="memoText" maxlength="100" rows="3"
+        style="width:100%;font-size:20px;padding:10px;border:2px solid var(--line);border-radius:10px;resize:none">${esc(o.memo || '')}</textarea>
+      <div class="quick" style="grid-template-columns:repeat(3,1fr)">
+        ${presets.map((t) => `<button data-p="${esc(t)}">${esc(t)}</button>`).join('')}
+      </div>
+      <div style="color:var(--muted);font-size:14px">메모는 조리대와 매니저 화면에 보여요 (최대 100자)</div>
+      <div class="actions">
+        <button class="btn ghost" data-r="clear">지우기</button>
+        <button class="btn ghost" data-r="0">취소</button>
+        <button class="btn primary" data-r="1">저장</button>
+      </div>`);
+    const ta = m.querySelector('#memoText');
+    m.querySelectorAll('[data-p]').forEach((b) => b.onclick = () => {
+      ta.value = (ta.value.trim() ? `${ta.value.trim()}, ${b.dataset.p}` : b.dataset.p).slice(0, 100);
+    });
+    m.querySelectorAll('[data-r]').forEach((b) => b.onclick = () => {
+      if (b.dataset.r === 'clear') { ta.value = ''; ta.focus(); return; }
+      m.remove();
+      resolve(b.dataset.r === '1' ? ta.value.trim().slice(0, 100) : null);
+    });
+  });
+}
+
+/* =====================================================================
    결제 화면 (Order / Cashier)
    ===================================================================== */
 const Cashier = {
@@ -790,7 +962,7 @@ const Cashier = {
   recentHtml() {
     const list = S.orders.slice(-CONFIG.recentOrderCount).reverse();
     if (!list.length) return '<div style="color:var(--muted)">아직 주문이 없습니다.</div>';
-    const label = { waiting: '조리 대기', ready: '준비 완료', cancelled: '취소됨' };
+    const label = STATUS_TEXT;
     return list.map((o) => `
       <div class="recent-row">
         <span class="no">${o.orderNo}</span>
@@ -895,16 +1067,7 @@ const Cashier = {
     m.querySelector('button').onclick = () => m.remove();
   },
 
-  async cancelOrder(id) {
-    const o = S.orders.find((x) => x.id === id);
-    if (!o) return;
-    const ok = await confirmModal({
-      title: `${o.orderNo}번 주문 취소`,
-      msg: `${esc(itemsText(o.items))}\n${money(o.total)} 을(를) 환불하고 재고를 복구합니다.${o.status === 'ready' ? '\n\n⚠️ 이미 준비 완료된 주문입니다.' : ''}`,
-      okText: '주문 취소', okClass: 'danger', cancelText: '닫기',
-    });
-    if (ok) await run(() => DB.cancelOrder(id), `${o.orderNo}번 주문이 취소되었습니다.`);
-  },
+  cancelOrder(id) { return cancelOrderFlow(id); },
 };
 VIEWS.order = Cashier;
 
@@ -917,55 +1080,315 @@ const Kitchen = {
   render() {
     if (!allReady()) { $('#app').innerHTML = loadingHtml; return; }
     const waiting = S.orders.filter((o) => o.status === 'waiting');   // createdAt 오름차순 = 오래된 주문이 먼저
+    const pickup = S.orders.filter((o) => o.status === 'ready').sort((a, b) => a.readyAt - b.readyAt);
     // 메뉴별 조리 필요 수량 합계
     const need = {};
     waiting.forEach((o) => o.items.forEach((i) => { need[i.name] = (need[i.name] || 0) + i.qty; }));
+    const memo = (o) => (o.memo ? `<div class="memo">📝 ${esc(o.memo)}</div>` : '');
+    const items = (o) => `<ul>${o.items.map((i) => `<li><span>${esc(i.name)}</span><span>×${i.qty}</span></li>`).join('')}</ul>`;
 
     $('#app').innerHTML = `
       <div class="summary-bar">
-        <span class="chip">대기 주문 <b>${waiting.length}</b>건</span>
+        <span class="chip">🔥 조리 중 <b>${waiting.length}</b>건</span>
         ${Object.entries(need).map(([n, q]) => `<span class="chip">${esc(n)} <b>${q}</b></span>`).join('')}
+        <span class="chip">🔔 수령 대기 <b>${pickup.length}</b>건</span>
       </div>
       ${waiting.length ? `<div class="kitchen-grid">${waiting.map((o) => `
-        <div class="k-card" data-created="${o.createdAt}">
+        <div class="k-card" data-since="${o.createdAt}" data-kind="cook">
           <div class="head"><span class="no">${o.orderNo}</span><span class="elapsed"></span></div>
-          <ul>${o.items.map((i) => `<li><span>${esc(i.name)}</span><span>×${i.qty}</span></li>`).join('')}</ul>
-          <button class="ready-btn" onclick="Kitchen.ready('${o.id}', ${o.orderNo})">준비 완료</button>
-        </div>`).join('')}</div>` : '<div class="empty">🍜 대기 중인 주문이 없습니다</div>'}`;
+          ${items(o)}${memo(o)}
+          <button class="ready-btn" onclick="orderAction('ready','${o.id}')">준비 완료</button>
+        </div>`).join('')}</div>` : '<div class="empty">🍜 조리할 주문이 없습니다</div>'}
+      <h2 class="k-section">🔔 수령 대기 <small>식권을 받고 라면을 건넨 뒤 [수령 완료]를 누르세요</small></h2>
+      ${pickup.length ? `<div class="kitchen-grid">${pickup.map((o) => `
+        <div class="k-card pickup" data-since="${o.readyAt}" data-kind="pickup">
+          <div class="head"><span class="no">${o.orderNo}</span><span class="elapsed"></span></div>
+          ${items(o)}${memo(o)}
+          <button class="ready-btn pick" onclick="orderAction('pick','${o.id}')">수령 완료</button>
+        </div>`).join('')}</div>` : '<div class="empty small">수령 대기 중인 주문이 없습니다</div>'}`;
     this.tick();
     if (!this.timer) this.timer = setInterval(() => this.tick(), 1000);
   },
 
   // 경과 시간만 갱신 (버튼 터치 중 화면이 다시 그려지지 않도록)
   tick() {
-    const lateMs = (S.settings.lateMinutes ?? CONFIG.defaults.lateMinutes) * 60000;
+    const lateMs = {
+      cook: (S.settings.lateMinutes ?? CONFIG.defaults.lateMinutes) * 60000,
+      pickup: (S.settings.pickupLateMinutes ?? CONFIG.defaults.pickupLateMinutes) * 60000,
+    };
     document.querySelectorAll('.k-card').forEach((c) => {
-      const ms = Date.now() - Number(c.dataset.created);
-      const s = Math.max(0, Math.floor(ms / 1000));
-      c.querySelector('.elapsed').textContent = `⏱ ${Math.floor(s / 60)}분 ${pad2(s % 60)}초`;
-      c.classList.toggle('late', ms >= lateMs);
+      const ms = Date.now() - Number(c.dataset.since);
+      c.querySelector('.elapsed').textContent = `⏱ ${dur(ms)}`;
+      c.classList.toggle('late', ms >= lateMs[c.dataset.kind]);
     });
   },
 
   onData(name) { if (name !== 'adjustments') this.render(); },
   leave() { clearInterval(this.timer); this.timer = null; },
-
-  async ready(id, no) {
-    try {
-      await DB.setReady(id, true);
-    } catch (e) {
-      console.error(e);
-      toast(`처리 실패: ${e.message}`);
-      return;
-    }
-    toast(`${no}번 준비 완료 → 호출했습니다`, {
-      actionText: '되돌리기',
-      ms: CONFIG.undoSeconds * 1000,
-      onAction: () => run(() => DB.setReady(id, false), `${no}번을 대기 목록으로 되돌렸습니다.`),
-    });
-  },
 };
 VIEWS.kitchen = Kitchen;
+
+/* =====================================================================
+   매니저 화면 (Manager) — 결제부터 수령까지 전체 흐름을 한눈에 보고 관리
+   ===================================================================== */
+const STAGES = [
+  { key: 'waiting', icon: '🔥', label: '조리 중' },
+  { key: 'ready', icon: '🔔', label: '수령 대기' },
+  { key: 'picked', icon: '✅', label: '수령 완료' },
+];
+
+const Manager = {
+  tab: 'board',        // board(보드) | table(주문 표)
+  col: 'waiting',      // 좁은 화면(스마트폰)에서 보고 있는 칸
+  q: '',               // 주문 표 검색어
+  filter: 'all',       // 주문 표 상태 필터
+  reg: 0,              // 주문 표 계산대 필터 (0 = 전체)
+  detailId: null,
+  detailEl: null,
+  timer: null,
+  PICKED_LIMIT: 30,    // 보드의 수령 완료 칸에 보여 줄 최근 건수
+
+  render() {
+    if (!allReady()) { $('#app').innerHTML = loadingHtml; return; }
+    const seg = (items, cur, fn) => `<div class="seg">${items.map(([k, l]) =>
+      `<button class="${cur === k ? 'on' : ''}" onclick="${fn}('${k}')">${l}</button>`).join('')}</div>`;
+    const controls = this.tab === 'table'
+      ? `<div class="mgr-controls">
+          <input id="mgrSearch" type="search" placeholder="🔍 주문번호 또는 메뉴 이름" value="${esc(this.q)}"
+            oninput="Manager.q=this.value;Manager.renderContent()">
+          ${seg([['all', '전체'], ...STAGES.map((st) => [st.key, st.label]), ['cancelled', '취소']], this.filter, 'Manager.setFilter')}
+          ${seg([['0', '모든 계산대'], ...Array.from({ length: CONFIG.cashierCount }, (_, i) => [String(i + 1), `결제 ${i + 1}`])], String(this.reg), 'Manager.setReg')}
+        </div>`
+      : `<div class="mgr-colpick">${seg(STAGES.map((st) => [st.key, `${st.icon} ${st.label}`]), this.col, 'Manager.setCol')}</div>`;
+    $('#app').innerHTML = `
+      <div id="mgrTop"></div>
+      <div class="tabs">
+        <button class="${this.tab === 'board' ? 'on' : ''}" onclick="Manager.go('board')">🗂 보드</button>
+        <button class="${this.tab === 'table' ? 'on' : ''}" onclick="Manager.go('table')">📋 주문 표</button>
+      </div>
+      ${controls}
+      <div id="mgrContent"></div>`;
+    this.renderTop();
+    this.renderContent();
+    if (!this.timer) this.timer = setInterval(() => this.tick(), 1000);
+  },
+
+  go(tab) { this.tab = tab; this.render(); },
+  setFilter(k) { this.filter = k; this.render(); },
+  setReg(k) { this.reg = Number(k); this.render(); },
+  setCol(k) { this.col = k; this.render(); },
+
+  onData(name) {
+    if (name === 'adjustments') return;
+    this.renderTop();
+    this.renderContent();
+    if (this.detailEl) this.renderDetail();
+  },
+
+  leave() {
+    clearInterval(this.timer);
+    this.timer = null;
+    this.close();
+  },
+
+  // 조리 지연 / 미수령 여부
+  isLate(o, now = Date.now()) {
+    if (o.status === 'waiting') return now - o.createdAt >= (S.settings.lateMinutes ?? CONFIG.defaults.lateMinutes) * 60000;
+    if (o.status === 'ready') return now - (o.readyAt || now) >= (S.settings.pickupLateMinutes ?? CONFIG.defaults.pickupLateMinutes) * 60000;
+    return false;
+  },
+
+  // 상단: 단계별 건수 + 경고
+  renderTop() {
+    const el = $('#mgrTop');
+    if (!el) return;
+    const count = (st) => S.orders.filter((o) => o.status === st).length;
+    const lateCook = S.orders.filter((o) => o.status === 'waiting' && this.isLate(o));
+    const latePick = S.orders.filter((o) => o.status === 'ready' && this.isLate(o));
+    const shown = S.menus.filter((m) => m.visible !== false);
+    const soldout = shown.filter((m) => (m.stockCurrent ?? 0) <= 0);
+    const low = shown.filter((m) => (m.stockCurrent ?? 0) > 0 && m.stockCurrent <= (m.threshold ?? CONFIG.defaults.threshold));
+    const nums = (list) => list.map((o) => `${o.orderNo}번`).join(', ');
+    const alerts = [
+      lateCook.length && `<span class="alert red">⏰ 조리 지연 ${lateCook.length}건 · ${nums(lateCook)}</span>`,
+      latePick.length && `<span class="alert amber">🍜 미수령 ${latePick.length}건 · ${nums(latePick)}</span>`,
+      ...soldout.map((m) => `<span class="alert gray">🚫 ${esc(m.name)} 매진</span>`),
+      ...low.map((m) => `<span class="alert amber">📦 ${esc(m.name)} ${m.stockCurrent}개 남음</span>`),
+    ].filter(Boolean);
+    el.innerHTML = `
+      <div class="mgr-summary">
+        ${[...STAGES, { key: 'cancelled', icon: '❌', label: '취소' }].map((st) =>
+          `<div class="mgr-count ${st.key}"><span>${st.icon} ${st.label}</span><b>${count(st.key)}</b></div>`).join('')}
+      </div>
+      <div class="mgr-alerts">${alerts.length ? alerts.join('') : '<span class="alert ok">👍 지연·미수령·재고 문제 없음</span>'}</div>`;
+  },
+
+  renderContent() {
+    const el = $('#mgrContent');
+    if (!el) return;
+    el.innerHTML = this.tab === 'board' ? this.boardHtml() : this.tableHtml();
+    this.tick(false);
+  },
+
+  // 1초마다: 경과 시간 글자 + 지연 강조 + 상단 경고 갱신
+  tick(withTop = true) {
+    const now = Date.now();
+    document.querySelectorAll('#mgrContent [data-since], #modalRoot [data-since]').forEach((e) => {
+      e.textContent = `${e.dataset.prefix || ''}${dur(now - Number(e.dataset.since))}`;
+    });
+    document.querySelectorAll('#mgrContent [data-order]').forEach((e) => {
+      const o = S.orders.find((x) => x.id === e.dataset.order);
+      if (o) e.classList.toggle('late', this.isLate(o, now));
+    });
+    if (withTop) this.renderTop();
+  },
+
+  timeHtml(o) {
+    if (o.status === 'waiting') return `<span class="m-time" data-since="${o.createdAt}" data-prefix="⏱ "></span>`;
+    if (o.status === 'ready') return `<span class="m-time" data-since="${o.readyAt}" data-prefix="🔔 "></span>`;
+    if (o.status === 'picked') return `<span class="m-time">수령 ${timeStr(o.pickedAt)}</span>`;
+    return `<span class="m-time">취소 ${timeStr(o.cancelledAt)}</span>`;
+  },
+
+  /* ---------------- 보드 ---------------- */
+  boardHtml() {
+    const lists = {
+      waiting: S.orders.filter((o) => o.status === 'waiting'),
+      ready: S.orders.filter((o) => o.status === 'ready').sort((a, b) => a.readyAt - b.readyAt),
+      picked: S.orders.filter((o) => o.status === 'picked').sort((a, b) => b.pickedAt - a.pickedAt),
+    };
+    return `<div class="mgr-board" data-col="${this.col}">${STAGES.map((st) => {
+      const all = lists[st.key];
+      const shown = st.key === 'picked' ? all.slice(0, this.PICKED_LIMIT) : all;
+      return `<section class="mgr-col ${st.key}">
+        <h3><span>${st.icon} ${st.label}</span><b>${all.length}</b></h3>
+        ${shown.length ? shown.map((o) => this.cardHtml(o)).join('') : '<div class="none">없음</div>'}
+        ${all.length > shown.length ? `<div class="none">최근 ${this.PICKED_LIMIT}건만 표시 · 전체는 📋 주문 표에서</div>` : ''}
+      </section>`;
+    }).join('')}</div>`;
+  },
+
+  cardHtml(o) {
+    const stop = 'event.stopPropagation();';
+    const actions = o.status === 'waiting'
+      ? `<button class="btn ok" onclick="${stop}orderAction('ready','${o.id}')">🔔 준비 완료</button>`
+      : o.status === 'ready'
+        ? `<button class="btn blue" onclick="${stop}orderAction('pick','${o.id}')">✅ 수령 완료</button>
+           <button class="btn" onclick="${stop}orderAction('recall','${o.id}')">📢 다시 호출</button>`
+        : '';
+    return `
+      <div class="m-card ${this.isLate(o) ? 'late' : ''}" data-order="${o.id}" onclick="Manager.open('${o.id}')">
+        <div class="m-head"><span class="m-no">${o.orderNo}</span>${o.register ? `<span class="m-reg">결제 ${o.register}</span>` : ''}${this.timeHtml(o)}</div>
+        <div class="m-items">${o.items.map((i) => `${esc(i.name)} ×${i.qty}`).join('<br>')}</div>
+        ${o.memo ? `<div class="memo">📝 ${esc(o.memo)}</div>` : ''}
+        ${actions ? `<div class="m-actions">${actions}</div>` : ''}
+      </div>`;
+  },
+
+  /* ---------------- 주문 표 ---------------- */
+  tableHtml() {
+    const q = this.q.trim();
+    const list = S.orders
+      .filter((o) => this.filter === 'all' || o.status === this.filter)
+      .filter((o) => !this.reg || o.register === this.reg)
+      .filter((o) => !q || String(o.orderNo).includes(q) || o.items.some((i) => i.name.includes(q)))
+      .slice().reverse();
+    if (!list.length) return '<div class="empty">조건에 맞는 주문이 없습니다</div>';
+    return `
+      <div style="color:var(--muted);margin-bottom:6px">${list.length}건 · 줄을 누르면 자세히 볼 수 있어요</div>
+      <div class="card scroll-x" style="padding:0">
+        <table class="mgr-table">
+          <thead><tr><th>번호</th><th class="hide-sm">계산대</th><th>메뉴</th><th class="num">금액</th><th>상태</th><th class="hide-sm">결제</th><th>경과</th></tr></thead>
+          <tbody>${list.map((o) => `
+            <tr class="${this.isLate(o) ? 'late' : ''}" data-order="${o.id}" onclick="Manager.open('${o.id}')">
+              <td style="font-size:22px;font-weight:900">${o.orderNo}</td>
+              <td class="hide-sm">${o.register ? `결제 ${o.register}` : ''}</td>
+              <td>${esc(itemsText(o.items))}${o.memo ? `<div class="memo">📝 ${esc(o.memo)}</div>` : ''}</td>
+              <td class="num">${money(o.total)}</td>
+              <td><span class="status ${o.status}">${STATUS_TEXT[o.status]}</span></td>
+              <td class="hide-sm">${timeStr(o.createdAt)}</td>
+              <td>${o.status === 'waiting' || o.status === 'ready' ? this.timeHtml(o)
+                : o.status === 'picked' ? `<span class="m-time">${dur(o.pickedAt - o.createdAt)} 걸림</span>` : '-'}</td>
+            </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+  },
+
+  /* ---------------- 주문 상세 ---------------- */
+  open(id) {
+    this.close();
+    this.detailId = id;
+    this.detailEl = openModal('');
+    this.detailEl.querySelector('.modal').classList.add('wide');
+    this.detailEl.addEventListener('click', (e) => { if (e.target === this.detailEl) this.close(); });
+    this.renderDetail();
+  },
+
+  close() {
+    if (this.detailEl) this.detailEl.remove();
+    this.detailEl = null;
+    this.detailId = null;
+  },
+
+  renderDetail() {
+    const o = S.orders.find((x) => x.id === this.detailId);
+    if (!o) { this.close(); return; }
+    const id = o.id;
+    const step = (label, at, note) => `<li><span>${label}</span><b>${clockStr(at)}</b>${note ? `<small>${note}</small>` : ''}</li>`;
+    const live = (label, since) => `<li><span>${label}</span><b data-since="${since}" data-prefix="⏱ "></b></li>`;
+    const timeline = [
+      step(`💰 결제${o.register ? ` (결제 ${o.register})` : ''}`, o.createdAt),
+      o.readyAt ? step('🔔 조리 완료 · 호출', o.readyAt, `결제 후 ${dur(o.readyAt - o.createdAt)}`)
+        : o.status === 'waiting' ? live('🔥 조리 중…', o.createdAt) : '',
+      o.recallAt ? step('📢 다시 호출', o.recallAt) : '',
+      o.pickedAt ? step('✅ 수령 완료', o.pickedAt, o.readyAt ? `호출 후 ${dur(o.pickedAt - o.readyAt)}` : '')
+        : o.status === 'ready' ? live('🍜 수령 기다리는 중…', o.readyAt) : '',
+      o.cancelledAt ? step('❌ 주문 취소', o.cancelledAt) : '',
+    ].join('');
+
+    const A = (cls, label, js) => `<button class="btn ${cls}" onclick="${js}">${label}</button>`;
+    const actions = {
+      waiting: [A('ok', '🔔 준비 완료 (호출)', `orderAction('ready','${id}')`)],
+      ready: [
+        A('blue', '✅ 수령 완료', `orderAction('pick','${id}')`),
+        A('', '📢 다시 호출', `orderAction('recall','${id}')`),
+        A('ghost', '↩ 조리 중으로 되돌리기', `orderAction('unready','${id}')`),
+      ],
+      picked: [A('ghost', '↩ 수령 대기로 되돌리기', `orderAction('unpick','${id}')`)],
+      cancelled: [],
+    }[o.status] || [];
+    if (o.status !== 'cancelled') actions.push(A('danger', '❌ 주문 취소', `cancelOrderFlow('${id}')`));
+
+    this.detailEl.querySelector('.modal').innerHTML = `
+      <div class="d-head"><span class="d-no">${o.orderNo}번</span><span class="status ${o.status}">${STATUS_TEXT[o.status]}</span></div>
+      <table>
+        <thead><tr><th>메뉴</th><th class="num">단가</th><th class="num">수량</th><th class="num">금액</th></tr></thead>
+        <tbody>${o.items.map((i) => `<tr><td><b>${esc(i.name)}</b></td><td class="num">${money(i.price)}</td>
+          <td class="num">${i.qty}</td><td class="num">${money(i.price * i.qty)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><th colspan="3">합계</th><th class="num">${money(o.total)}</th></tr></tfoot>
+      </table>
+      <div style="color:var(--muted);margin-top:6px;text-align:right">받은 돈 ${money(o.received)} · 거스름돈 ${money(o.change)}</div>
+      <h3>진행 기록</h3>
+      <ul class="timeline">${timeline}</ul>
+      <h3>메모</h3>
+      <div class="row" style="align-items:center">
+        <div class="memo" style="flex:1;margin:0;min-width:160px">${o.memo ? `📝 ${esc(o.memo)}` : '<span style="color:var(--muted);font-weight:400">메모 없음</span>'}</div>
+        <button class="btn small" onclick="Manager.editMemo('${id}')">✏️ 메모 쓰기</button>
+      </div>
+      ${actions.length ? `<div class="d-actions">${actions.join('')}</div>` : '<div class="alert gray" style="margin-top:14px">취소된 주문입니다</div>'}
+      <div class="actions"><button class="btn ghost" onclick="Manager.close()">닫기</button></div>`;
+    this.tick(false);
+  },
+
+  async editMemo(id) {
+    const o = S.orders.find((x) => x.id === id);
+    if (!o) return;
+    const memo = await memoModal(o);
+    if (memo === null) return;
+    await run(() => OrderOps.memo(id, memo), memo ? `${o.orderNo}번 메모를 저장했습니다` : `${o.orderNo}번 메모를 지웠습니다`);
+  },
+};
+VIEWS.manager = Manager;
 </script>
 <script>
 /* =====================================================================
@@ -1048,7 +1471,7 @@ const Sound = {
    ===================================================================== */
 const Display = {
   started: false,
-  seen: null,        // 이미 호출한 "주문id@준비시각" 집합
+  seen: null,        // 이미 호출한 "주문id@준비시각@다시호출시각" 집합
   queue: [],
   playing: false,
   flashNo: null,
@@ -1056,7 +1479,7 @@ const Display = {
   render() {
     // 이미 데이터가 있는 상태로 화면에 들어온 경우, 기존 호출은 방송하지 않도록 기준점 설정
     if (this.seen === null && S.ready.orders) this.seen = new Set(this.readyKeys().keys);
-    const ready = S.orders.filter((o) => o.status === 'ready').sort((a, b) => b.readyAt - a.readyAt);
+    const ready = S.orders.filter((o) => o.status === 'ready').sort((a, b) => callAt(b) - callAt(a));
     // 호출 중인 번호가 있으면 그 번호를 가운데에 표시
     const cur = this.flashNo ?? ready[0]?.orderNo;
     // 조리 중: 먼저 결제한 순서 / 조리 완료: 최근에 완료된 순서
@@ -1119,8 +1542,11 @@ const Display = {
   },
 
   readyKeys() {
-    const ready = S.orders.filter((o) => o.status === 'ready' && o.readyAt).sort((a, b) => a.readyAt - b.readyAt);
-    return { ready, keys: ready.map((o) => `${o.id}@${o.readyAt}`) };
+    // 조리 완료 또는 "다시 호출" 시각이 바뀌면 새 호출로 본다.
+    // 수령 완료 주문도 기준점에 포함 → "수령 대기로 되돌리기"를 해도 다시 방송하지 않음
+    const ready = S.orders.filter((o) => (o.status === 'ready' || o.status === 'picked') && o.readyAt)
+      .sort((a, b) => callAt(a) - callAt(b));
+    return { ready, keys: ready.map((o) => `${o.id}@${o.readyAt}@${o.recallAt || 0}`) };
   },
 
   onData(name) {
@@ -1131,7 +1557,10 @@ const Display = {
       if (S.ready.orders) this.seen = new Set(keys);
     } else {
       ready.forEach((o, i) => {
-        if (!this.seen.has(keys[i])) { this.seen.add(keys[i]); this.queue.push(o.orderNo); }
+        if (!this.seen.has(keys[i])) {
+          this.seen.add(keys[i]);
+          if (o.status === 'ready') this.queue.push(o.orderNo);
+        }
       });
       this.playQueue();
     }
@@ -1224,7 +1653,7 @@ function downloadCsv(filename, rows) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 const typeLabel = { restock: '보충', waste: '폐기', gift: '증정' };
-const statusLabel = { waiting: '조리대기', ready: '준비완료', cancelled: '취소' };
+const statusLabel = { waiting: '조리중', ready: '수령대기', picked: '수령완료', cancelled: '취소' };
 const menuName = (id) => S.menus.find((m) => m.id === id)?.name || '(삭제된 메뉴)';
 
 function exportSummaryCsv(bucketMin) {
@@ -1245,10 +1674,10 @@ function exportSummaryCsv(bucketMin) {
 }
 
 function exportOrdersCsv() {
-  const rows = [['주문번호', '계산대', '주문 시각', '상태', '메뉴', '단가', '수량', '소계', '주문 총액', '받은 돈', '거스름돈', '준비 완료 시각', '취소 시각']];
+  const rows = [['주문번호', '계산대', '주문 시각', '상태', '메뉴', '단가', '수량', '소계', '주문 총액', '받은 돈', '거스름돈', '준비 완료 시각', '수령 완료 시각', '취소 시각', '메모']];
   S.orders.forEach((o) => o.items.forEach((i) => rows.push([
     o.orderNo, o.register ? `결제 ${o.register}` : '', dateTimeStr(o.createdAt), statusLabel[o.status], i.name, i.price, i.qty, i.price * i.qty,
-    o.total, o.received, o.change, dateTimeStr(o.readyAt), dateTimeStr(o.cancelledAt),
+    o.total, o.received, o.change, dateTimeStr(o.readyAt), dateTimeStr(o.pickedAt), dateTimeStr(o.cancelledAt), o.memo || '',
   ])));
   downloadCsv(`라면가게_주문상세_${todayStr()}.csv`, rows);
 }
@@ -1519,9 +1948,13 @@ const Admin = {
           </div>
         </div>
         <div class="card">
-          <h2>조리대 화면</h2>
-          <div class="field" style="max-width:260px"><label>지연 강조 기준 (분)</label>
-            <input type="number" min="1" value="${st.lateMinutes}" onchange="Admin.saveNum('lateMinutes', this.value)"></div>
+          <h2>조리대·매니저 화면</h2>
+          <div class="row">
+            <div class="field" style="max-width:260px"><label>조리 지연 강조 기준 (결제 후, 분)</label>
+              <input type="number" min="1" value="${st.lateMinutes}" onchange="Admin.saveNum('lateMinutes', this.value)"></div>
+            <div class="field" style="max-width:260px"><label>미수령 강조 기준 (조리 완료 후, 분)</label>
+              <input type="number" min="1" value="${st.pickupLateMinutes}" onchange="Admin.saveNum('pickupLateMinutes', this.value)"></div>
+          </div>
         </div>
         <div class="card">
           <h2>호출 화면 소리</h2>
