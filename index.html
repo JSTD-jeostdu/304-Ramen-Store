@@ -134,17 +134,29 @@
   /* ---------- 호출 화면 ---------- */
   body.display-mode { background: #111; color: #fff; }
   body.display-mode .topbar, body.display-mode footer.app-foot { display: none; }
+  body.display-mode main { padding: 0; overflow: hidden; }
   .display { height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3vh 3vw; }
   .display .title { font-size: 6vh; font-weight: 900; color: #ffd43b; text-align: center; }
-  .display .label { font-size: 4vh; margin-top: 3vh; color: #ccc; }
-  .display .current { font-size: 32vh; font-weight: 900; line-height: 1; color: #fff; margin: 2vh 0; }
+  .display .label { font-size: 3.5vh; margin-top: 2vh; color: #ccc; }
+  .display .current { font-size: 24vh; font-weight: 900; line-height: 1; color: #fff; margin: 1vh 0; }
   .display .current.flash { animation: flash 0.6s ease-in-out 5; }
   @keyframes flash { 0%,100% { transform: scale(1); color: #fff; } 50% { transform: scale(1.18); color: #ff922b; } }
-  .display .msg { font-size: 5vh; font-weight: 700; }
-  .display .prev { display: flex; gap: 3vw; margin-top: auto; align-items: center; }
-  .display .prev .p { font-size: 8vh; font-weight: 900; color: #999; background: #222; border-radius: 2vh; padding: 1vh 3vw; }
-  .display .prev-label { font-size: 3vh; color: #888; }
-  .display .foot { margin-top: 2vh; font-size: 2vh; color: #666; }
+  .display .msg { font-size: 4.5vh; font-weight: 700; }
+  /* 하단 현황판: 조리 중 / 조리 완료 */
+  .display .boards { margin-top: auto; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 2vw; }
+  .display .board { background: #1c1c1c; border: 2px solid #333; border-radius: 2vh; padding: 1.5vh 1.5vw; height: 29vh; overflow: hidden; }
+  .display .board h3 { margin: 0 0 1vh; font-size: 3vh; display: flex; justify-content: space-between; align-items: baseline; }
+  .display .board h3 small { font-size: 2.2vh; color: #888; font-weight: 400; }
+  .display .board.cooking h3 { color: #ffa94d; }
+  .display .board.done h3 { color: #69db7c; }
+  .display .chips { display: flex; flex-wrap: wrap; gap: 0.9vh 0.6vw; align-content: flex-start; }
+  .display .chip { font-size: 3.6vh; font-weight: 900; min-width: 6.4vw; text-align: center; padding: 0.4vh 0.6vw; border-radius: 1.2vh; background: #2b2b2b; color: #ddd; }
+  .display .cooking .chip { border: 2px solid #7a4a17; }
+  .display .done .chip { border: 2px solid #2b6b36; color: #b2f2bb; }
+  .display .done .chip.now { background: #2b8a3e; color: #fff; }
+  .display .chip.more { font-size: 2.6vh; color: #888; border-style: dashed; }
+  .display .board .none { color: #666; font-size: 2.6vh; }
+  .display .foot { margin-top: 1.5vh; font-size: 2vh; color: #666; }
   .start-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.9); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; z-index: 50; text-align: center; gap: 16px; }
   .start-overlay small { font-size: 18px; font-weight: 400; color: #bbb; }
   .display-exit { position: fixed; right: 8px; bottom: 8px; background: transparent; color: #333; font-size: 14px; padding: 6px; }
@@ -555,6 +567,7 @@ function setNetState(state) {
   tag.className = off ? 'net off' : 'net';
 }
 window.addEventListener('online', () => setNetState('on'));
+window.addEventListener('resize', () => { if (role === 'display') Display.render(); });
 window.addEventListener('offline', () => setNetState('off'));
 </script>
 <script>
@@ -1046,15 +1059,22 @@ const Display = {
     const ready = S.orders.filter((o) => o.status === 'ready').sort((a, b) => b.readyAt - a.readyAt);
     // 호출 중인 번호가 있으면 그 번호를 가운데에 표시
     const cur = this.flashNo ?? ready[0]?.orderNo;
-    const prev = ready.map((o) => o.orderNo).filter((n) => n !== cur).slice(0, 4);
+    // 조리 중: 먼저 결제한 순서 / 조리 완료: 최근에 완료된 순서
+    const cooking = S.orders.filter((o) => o.status === 'waiting').map((o) => o.orderNo);
+    const done = ready.map((o) => o.orderNo);
+    const chips = (list, isDone) => list.length
+      ? `<div class="chips">${list.map((n) => `<span class="chip ${isDone && n === cur ? 'now' : ''}">${n}</span>`).join('')}</div>`
+      : `<div class="none">${isDone ? '아직 완료된 주문이 없어요' : '조리 중인 주문이 없어요'}</div>`;
     $('#app').innerHTML = `
       <div class="display">
-        <div class="title">${esc(CONFIG.storeName)}</div>
+        <div class="title">🍜 ${esc(CONFIG.storeName)} 🍜</div>
         <div class="label">${cur != null ? '호출 번호' : ''}</div>
         <div class="current ${this.flashNo != null ? 'flash' : ''}" id="dispCur">${cur != null ? cur : '🍜'}</div>
         <div class="msg">${cur != null ? `${cur}번 손님, 라면이 준비되었습니다!` : '주문하신 라면을 맛있게 끓이고 있어요'}</div>
-        ${prev.length ? `<div class="prev-label" style="margin-top:auto">이전 호출</div>` : ''}
-        <div class="prev" style="${prev.length ? 'margin-top:1vh' : ''}">${prev.map((n) => `<span class="p">${n}</span>`).join('')}</div>
+        <div class="boards">
+          <div class="board cooking"><h3>🔥 조리 중 <small>${cooking.length}건 · 주문 순서</small></h3>${chips(cooking, false)}</div>
+          <div class="board done"><h3>✅ 조리 완료 <small>식권을 가지고 받아 가세요</small></h3>${chips(done, true)}</div>
+        </div>
         <div class="foot">Made by 정우쌤</div>
       </div>
       ${this.started ? '' : `
@@ -1063,6 +1083,27 @@ const Display = {
           <small>소리 재생 허용과 전체화면 전환을 위해 한 번 터치가 필요합니다</small>
         </div>`}
       <button class="display-exit" ondblclick="Display.exit()">나가기(더블클릭)</button>`;
+    this.fitBoards();
+  },
+
+  // 현황판에 번호가 넘치면 뒤쪽 번호를 숨기고 "외 N건"으로 표시 (화면 크기에 맞춰 자동 계산)
+  fitBoards() {
+    document.querySelectorAll('.display .board').forEach((board) => {
+      const box = board.querySelector('.chips');
+      if (!box) return;
+      const fits = () => board.scrollHeight <= board.clientHeight + 1;
+      if (fits()) return;
+      const chips = [...box.querySelectorAll('.chip')];
+      const more = document.createElement('span');
+      more.className = 'chip more';
+      box.appendChild(more);
+      let hidden = 0;
+      do {
+        chips.pop().remove();
+        hidden++;
+        more.textContent = `외 ${hidden}건`;
+      } while (!fits() && chips.length);
+    });
   },
 
   start() {
