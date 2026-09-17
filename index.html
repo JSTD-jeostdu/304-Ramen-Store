@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>슈의 라면 가게 POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fff8ef;
+    --panel: #ffffff;
+    --ink: #1d1a17;
+    --muted: #6b635b;
+    --line: #e4d9cc;
+    --brand: #d9480f;
+    --brand-dark: #a8380b;
+    --ok: #2b8a3e;
+    --warn: #f08c00;
+    --danger: #c92a2a;
+    --info: #1864ab;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: 'Noto Sans KR', system-ui, sans-serif;
+    display: flex; flex-direction: column; min-height: 100vh;
+    user-select: none; -webkit-user-select: none;
+  }
+  input, textarea, select { user-select: text; -webkit-user-select: text; font: inherit; }
+  button { font: inherit; cursor: pointer; border: none; touch-action: manipulation; }
+  button:disabled { cursor: not-allowed; opacity: .4; }
+
+  /* ---------- 상단 바 ---------- */
+  .topbar {
+    display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    background: var(--ink); color: #fff; flex-wrap: wrap;
+  }
+  .topbar h1 { font-size: 20px; margin: 0; font-weight: 900; }
+  .topbar .role-tag { background: var(--brand); padding: 4px 12px; border-radius: 999px; font-weight: 700; }
+  .topbar .spacer { flex: 1; }
+  .topbar .net { font-size: 14px; padding: 4px 10px; border-radius: 999px; background: #2b8a3e; }
+  .topbar .net.off { background: var(--danger); }
+  .topbar .net.local { background: #5f3dc4; }
+  .topbar button { background: #444; color: #fff; padding: 8px 14px; border-radius: 10px; font-weight: 700; }
+
+  main { flex: 1; padding: 16px; min-height: 0; }
+  footer { text-align: center; padding: 8px; color: var(--muted); font-size: 13px; }
+
+  .btn { padding: 14px 20px; border-radius: 12px; font-weight: 700; font-size: 18px; background: #e9e2d8; color: var(--ink); }
+  .btn.primary { background: var(--brand); color: #fff; }
+  .btn.ok { background: var(--ok); color: #fff; }
+  .btn.danger { background: var(--danger); color: #fff; }
+  .btn.ghost { background: transparent; border: 2px solid var(--line); }
+  .btn.small { padding: 8px 12px; font-size: 15px; }
+
+  .card { background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); padding: 16px; }
+  h2 { margin: 0 0 12px; font-size: 22px; }
+  h3 { margin: 16px 0 8px; font-size: 18px; }
+
+  /* ---------- 역할 선택 ---------- */
+  .role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 1000px; margin: 40px auto; }
+  .role-grid button { min-height: 180px; border-radius: 20px; background: var(--panel); border: 3px solid var(--line); font-size: 26px; font-weight: 900; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .role-grid button span { font-size: 56px; }
+  .role-grid button small { font-size: 15px; font-weight: 400; color: var(--muted); }
+  .role-grid button:active { border-color: var(--brand); transform: scale(.98); }
+
+  /* ---------- 결제 화면 ---------- */
+  .order-layout { display: grid; grid-template-columns: 1fr 660px; gap: 16px; align-items: start; }
+  .side { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+  .side .col { display: flex; flex-direction: column; gap: 12px; }
+  @media (max-width: 1150px) { .order-layout { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .side { grid-template-columns: 1fr; } }
+  .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; align-content: start; }
+  .tile {
+    position: relative; min-height: 140px; min-width: 120px; border-radius: 18px;
+    background: var(--panel); border: 3px solid var(--line); padding: 12px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+  }
+  .tile:active:not(:disabled) { transform: scale(.96); border-color: var(--brand); }
+  .tile .name { font-size: 22px; font-weight: 900; line-height: 1.2; }
+  .tile .price { font-size: 18px; color: var(--muted); margin-top: 6px; }
+  .tile .stock { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .tile .qty-badge { position: absolute; top: -10px; right: -10px; background: var(--brand); color: #fff; min-width: 40px; height: 40px; border-radius: 20px; font-size: 22px; font-weight: 900; display: flex; align-items: center; justify-content: center; padding: 0 8px; }
+  .tile .low-badge { position: absolute; top: 8px; left: 8px; background: var(--warn); color: #fff; font-size: 13px; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
+  .tile.soldout { opacity: 1; background: #eee; }
+  .tile.soldout::after { content: 'SOLD OUT'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.55); color: #fff; font-size: 24px; font-weight: 900; border-radius: 15px; letter-spacing: 1px; }
+
+  .cart-list { max-height: 200px; overflow: auto; }
+  .cart-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 18px; }
+  .cart-row .n { flex: 1; font-weight: 700; }
+  .cart-row .del { background: #ffe3e3; color: var(--danger); width: 44px; height: 44px; border-radius: 10px; font-size: 20px; font-weight: 900; }
+  .total-line { display: flex; justify-content: space-between; align-items: baseline; font-size: 20px; font-weight: 700; margin-top: 8px; }
+  .total-line .big { font-size: 38px; font-weight: 900; color: var(--brand); }
+  .received { font-size: 30px; font-weight: 900; text-align: right; }
+  .quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 8px 0; }
+  .quick button { padding: 14px 4px; border-radius: 10px; background: #fff0e0; font-weight: 700; font-size: 17px; border: 2px solid #ffd8a8; }
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .keypad button { height: 58px; border-radius: 12px; background: #f1ebe3; font-size: 26px; font-weight: 700; }
+  .keypad button:active { background: #e0d6ca; }
+  .change-box { text-align: center; padding: 14px; border-radius: 14px; background: #ebfbee; border: 3px solid var(--ok); }
+  .change-box .label { font-size: 18px; font-weight: 700; }
+  .change-box .amt { font-size: 56px; font-weight: 900; color: var(--ok); line-height: 1.1; }
+  .change-box.short { background: #fff5f5; border-color: var(--danger); }
+  .change-box.short .amt { color: var(--danger); font-size: 32px; }
+  .pay-btn { width: 100%; padding: 22px; font-size: 28px; font-weight: 900; border-radius: 16px; background: var(--ok); color: #fff; }
+
+  .recent-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .recent-row .no { font-size: 24px; font-weight: 900; width: 60px; }
+  .recent-row .desc { flex: 1; font-size: 15px; }
+  .status { font-size: 13px; font-weight: 700; padding: 3px 8px; border-radius: 8px; color: #fff; }
+  .status.waiting { background: var(--warn); }
+  .status.ready { background: var(--ok); }
+  .status.cancelled { background: #868e96; }
+
+  /* ---------- 조리대 ---------- */
+  .kitchen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .k-card { background: var(--panel); border: 3px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .k-card.late { border-color: var(--danger); background: #fff5f5; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(201,42,42,.25); } }
+  .k-card .head { display: flex; justify-content: space-between; align-items: center; }
+  .k-card .no { font-size: 56px; font-weight: 900; line-height: 1; }
+  .k-card .elapsed { font-size: 20px; font-weight: 700; color: var(--muted); }
+  .k-card.late .elapsed { color: var(--danger); }
+  .k-card ul { margin: 0; padding: 0; list-style: none; font-size: 22px; font-weight: 700; }
+  .k-card li { padding: 4px 0; display: flex; justify-content: space-between; }
+  .k-card .ready-btn { padding: 20px; font-size: 24px; font-weight: 900; border-radius: 14px; background: var(--ok); color: #fff; }
+  .empty { text-align: center; color: var(--muted); font-size: 24px; padding: 60px 0; }
+  .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .summary-bar .chip { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; padding: 8px 14px; font-size: 18px; font-weight: 700; }
+
+  /* ---------- 호출 화면 ---------- */
+  body.display-mode { background: #111; color: #fff; }
+  body.display-mode .topbar, body.display-mode footer.app-foot { display: none; }
+  .display { height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3vh 3vw; }
+  .display .title { font-size: 6vh; font-weight: 900; color: #ffd43b; text-align: center; }
+  .display .label { font-size: 4vh; margin-top: 3vh; color: #ccc; }
+  .display .current { font-size: 32vh; font-weight: 900; line-height: 1; color: #fff; margin: 2vh 0; }
+  .display .current.flash { animation: flash 0.6s ease-in-out 5; }
+  @keyframes flash { 0%,100% { transform: scale(1); color: #fff; } 50% { transform: scale(1.18); color: #ff922b; } }
+  .display .msg { font-size: 5vh; font-weight: 700; }
+  .display .prev { display: flex; gap: 3vw; margin-top: auto; align-items: center; }
+  .display .prev .p { font-size: 8vh; font-weight: 900; color: #999; background: #222; border-radius: 2vh; padding: 1vh 3vw; }
+  .display .prev-label { font-size: 3vh; color: #888; }
+  .display .foot { margin-top: 2vh; font-size: 2vh; color: #666; }
+  .start-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.9); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; z-index: 50; text-align: center; gap: 16px; }
+  .start-overlay small { font-size: 18px; font-weight: 400; color: #bbb; }
+  .display-exit { position: fixed; right: 8px; bottom: 8px; background: transparent; color: #333; font-size: 14px; padding: 6px; }
+
+  /* ---------- 관리자 ---------- */
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tabs button { padding: 12px 20px; border-radius: 12px; background: #e9e2d8; font-weight: 700; font-size: 18px; }
+  .tabs button.on { background: var(--ink); color: #fff; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; font-size: 16px; }
+  th { background: #f6efe6; font-weight: 700; }
+  td.num, th.num { text-align: right; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 14px; color: var(--muted); font-weight: 700; }
+  .field input, .field select { padding: 10px; border: 2px solid var(--line); border-radius: 10px; font-size: 17px; min-width: 0; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .admin-grid { display: grid; gap: 16px; }
+  .menu-edit td input { width: 100%; padding: 8px; border: 2px solid var(--line); border-radius: 8px; font-size: 16px; }
+  .menu-edit td input.n { max-width: 110px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .stat { background: var(--panel); border: 2px solid var(--line); border-radius: 14px; padding: 14px; }
+  .stat .k { color: var(--muted); font-weight: 700; font-size: 15px; }
+  .stat .v { font-size: 32px; font-weight: 900; }
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 220px; padding-top: 24px; overflow-x: auto; }
+  .bar { flex: 1; min-width: 36px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .bar .fill { width: 100%; background: var(--brand); border-radius: 6px 6px 0 0; min-height: 2px; position: relative; }
+  .bar .val { font-size: 11px; color: var(--ink); margin-bottom: 2px; white-space: nowrap; }
+  .bar .t { font-size: 12px; color: var(--muted); margin-top: 4px; white-space: nowrap; }
+  .scroll-x { overflow-x: auto; }
+
+  /* ---------- 모달 / 토스트 ---------- */
+  .modal-back { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+  .modal { background: #fff; color: var(--ink); border-radius: 20px; padding: 24px; width: min(460px, 100%); max-height: 90vh; overflow: auto; }
+  .modal h2 { font-size: 24px; }
+  .modal .msg { font-size: 19px; margin-bottom: 16px; white-space: pre-line; }
+  .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+  .modal .actions .btn { flex: 1; padding: 18px; font-size: 20px; }
+  .modal .qty-display { font-size: 48px; font-weight: 900; text-align: center; padding: 8px; border: 2px solid var(--line); border-radius: 12px; margin-bottom: 12px; }
+  .done-no { font-size: 140px; font-weight: 900; text-align: center; color: var(--brand); line-height: 1; margin: 10px 0; }
+  .toast { position: fixed; left: 50%; bottom: 60px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 14px 20px; border-radius: 14px; font-size: 18px; font-weight: 700; display: flex; gap: 14px; align-items: center; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .toast button { background: #ffd43b; color: var(--ink); padding: 10px 16px; border-radius: 10px; font-weight: 900; font-size: 18px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header class="topbar" id="topbar">
+  <h1>🍜 슈의 라면 가게</h1>
+  <span class="role-tag" id="roleTag"></span>
+  <span class="spacer"></span>
+  <span class="net" id="netTag">연결됨</span>
+  <button onclick="changeRole()">역할 변경</button>
+</header>
+<main id="app"></main>
+<footer class="app-foot">Made by 정우쌤</footer>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* =====================================================================
+   CONFIG — Firebase 키·상수·기본값을 여기에 모아 둔다
+   firebase.apiKey 가 비어 있으면 "로컬 모드"로 동작한다.
+   (로컬 모드: 한 기기 안의 여러 탭끼리만 동기화 → 리허설·연습용)
+
+   ※ 기존 Firebase 프로젝트를 함께 쓰는 경우
+     - 이 앱의 모든 데이터는 dataRoot/eventId 문서 아래에만 저장된다.
+       (예: ramen304_pos/festival-2026/orders/...)
+       → 다른 앱의 컬렉션을 읽거나 덮어쓰거나 초기화하지 않는다.
+     - appName 으로 Firebase 인스턴스와 오프라인 캐시(IndexedDB)를 분리한다.
+       → 같은 도메인(예: ○○.github.io)의 다른 앱과 캐시가 섞이지 않는다.
+   ===================================================================== */
+const CONFIG = {
+  // Firebase 콘솔 > 프로젝트 설정 > 내 앱 > (새로 추가한 웹 앱) 의 설정값을 붙여넣는다
+  firebase: {
+    apiKey: 'AIzaSyCHRZRJ0udNn412kY8_yhr6UwLdVlexABQ',
+    authDomain: 'p-bti-b4e49.firebaseapp.com',
+    projectId: 'p-bti-b4e49',
+    storageBucket: 'p-bti-b4e49.firebasestorage.app',
+    messagingSenderId: '772653970483',
+    appId: '1:772653970483:web:7a304a60a04e4aa56f5f46',
+  },
+  firebaseVersion: '12.19.0',              // Firebase 콘솔이 안내한 버전과 동일하게 맞춤
+  appName: 'ramen304-pos',                 // Firebase 인스턴스 이름 (다른 앱과 겹치지 않게)
+  databaseId: '',                          // 비우면 (default) 데이터베이스. 별도 DB를 만들었다면 그 ID
+  dataRoot: 'ramen304_pos',                // 최상위 컬렉션 이름 — 기존 앱이 쓰지 않는 이름이어야 함
+  eventId: 'festival-2026',                // 행사 구분 (내년 축제는 이 값만 바꾸면 새 데이터로 시작)
+  storeName: '3학년 4반 슈의 라면 가게',
+  currencyUnit: '원',                     // 학교 화폐 단위 (예: '원', '코인')
+  defaults: {
+    quickCash: [1000, 5000, 10000],       // 빠른 입력 버튼 (쉼표로 설정 화면에서 수정 가능)
+    ttsRate: 1.0,                          // 음성 속도 (0.5 ~ 2)
+    ttsVolume: 1.0,                        // 음성 볼륨 (0 ~ 1)
+    chime: true,                           // 차임음 사용 여부
+    lateMinutes: 5,                        // 조리 지연 강조 기준 (분)
+    threshold: 10,                         // 재고 부족 경고 기본 임계값
+  },
+  undoSeconds: 6,                          // "준비 완료" 되돌리기 가능 시간 (초)
+  longPressMs: 550,                        // 메뉴 타일 길게 누르기 판정 시간
+  recentOrderCount: 12,                    // 결제 화면 최근 주문 표시 개수
+  // 계산대별 주문번호 구간 (축제 도중에는 바꾸지 말 것!)
+  //  계산대 2대 · 100개씩이면 → 결제 1: 1~100, 결제 2: 101~200,
+  //  다 쓰면 다음 바퀴 → 결제 1: 201~300, 결제 2: 301~400 … (절대 겹치지 않음)
+  cashierCount: 2,
+  orderBlockSize: 100,
+  localStorageKey: 'ramen-pos-local-db',
+  roleKey: 'ramen-pos-role',
+};
+
+// 계산대 번호(1부터)와 그 계산대의 n번째 주문 → 주문번호
+function orderNoFor(register, seq) {
+  const B = CONFIG.orderBlockSize, K = CONFIG.cashierCount, idx = seq - 1;
+  return Math.floor(idx / B) * K * B + (register - 1) * B + (idx % B) + 1;
+}
+const rangeText = (register) => `${orderNoFor(register, 1)}~${orderNoFor(register, CONFIG.orderBlockSize)}번`;
+
+const ROLES = {
+  ...Object.fromEntries(Array.from({ length: CONFIG.cashierCount }, (_, i) => [
+    `order${i + 1}`, { label: `결제 ${i + 1}`, icon: '💰', desc: `주문번호 ${rangeText(i + 1)} · 거스름돈 계산` },
+  ])),
+  kitchen: { label: '조리대', icon: '🍳', desc: '대기 주문 · 준비 완료' },
+  display: { label: '호출',   icon: '📢', desc: '손님용 번호 호출 화면' },
+  admin:   { label: '설정·정산', icon: '⚙️', desc: '메뉴·재고·매출 관리' },
+};
+
+/* =====================================================================
+   공통 유틸
+   ===================================================================== */
+const $ = (sel) => document.querySelector(sel);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = (n) => `${Number(n || 0).toLocaleString('ko-KR')}${CONFIG.currencyUnit}`;
+const pad2 = (n) => String(n).padStart(2, '0');
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+const timeStr = (ms) => { if (!ms) return ''; const d = new Date(ms); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+const dateTimeStr = (ms) => { if (!ms) return ''; const d = new Date(ms); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const itemsText = (items) => items.map((i) => `${i.name}×${i.qty}`).join(', ');
+
+/* =====================================================================
+   앱 상태 (DB 구독 결과가 여기에 들어온다)
+   ===================================================================== */
+const S = {
+  menus: [],        // order 순 정렬
+  orders: [],       // createdAt 순 정렬
+  adjustments: [],
+  settings: { ...CONFIG.defaults },
+  ready: { menus: false, orders: false, adjustments: false, settings: false },
+};
+
+function setCollection(name, list) {
+  if (name === 'settings') {
+    S.settings = { ...CONFIG.defaults, ...(list || {}) };
+  } else {
+    const sortKey = name === 'menus' ? 'order' : 'createdAt';
+    S[name] = list.sort((a, b) => (a[sortKey] ?? 0) - (b[sortKey] ?? 0));
+  }
+  S.ready[name] = true;
+  onDataChange(name);
+}
+
+/* =====================================================================
+   데이터 계층 1) Firestore 백엔드
+   - 필드 단위 update / increment 로 last-write-wins 유실 방지
+   - 주문번호 발번·재고 확인은 트랜잭션
+   ===================================================================== */
+async function createFirestoreBackend() {
+  const v = CONFIG.firebaseVersion;
+  const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-app.js`);
+  const F = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-firestore.js`);
+  if (!/^[A-Za-z0-9_-]+$/.test(CONFIG.dataRoot || '') || !/^[A-Za-z0-9_-]+$/.test(CONFIG.eventId || '')) {
+    throw new Error('CONFIG.dataRoot / eventId 는 영문·숫자·_·- 로만 입력하세요.');
+  }
+  // 이름 있는 인스턴스로 초기화 → 기본([DEFAULT]) 인스턴스를 쓰는 다른 앱과 분리
+  const app = initializeApp(CONFIG.firebase, CONFIG.appName);
+  const dbId = CONFIG.databaseId || '(default)';
+
+  // 오프라인 지속성: 네트워크가 끊겨도 캐시로 화면 유지, 복구 시 자동 동기화
+  let db;
+  try {
+    db = F.initializeFirestore(app, {
+      localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }),
+    }, dbId);
+  } catch (e) {
+    console.warn('오프라인 캐시 사용 불가, 기본 모드로 동작', e);
+    db = F.getFirestore(app, dbId);
+  }
+
+  // 모든 경로는 dataRoot/eventId 아래로 한정 (다른 앱 데이터에 절대 접근하지 않음)
+  const base = [CONFIG.dataRoot, CONFIG.eventId];
+  const col = (n) => F.collection(db, ...base, n);
+  const ref = (n, id) => F.doc(db, ...base, n, id);
+
+  return {
+    mode: 'firebase',
+    path: `${CONFIG.firebase.projectId} / ${dbId} / ${base.join('/')}`,
+
+    start() {
+      for (const name of ['menus', 'orders', 'adjustments']) {
+        F.onSnapshot(col(name), { includeMetadataChanges: true }, (snap) => {
+          setCollection(name, snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+          setNetState(snap.metadata.fromCache && !navigator.onLine ? 'off' : 'on');
+        }, (err) => { console.error(err); toast(`DB 오류: ${err.message}`); });
+      }
+      F.onSnapshot(ref('settings', 'app'), (snap) => setCollection('settings', snap.exists() ? snap.data() : {}));
+    },
+
+    // 결제 확정: 재고 확인 + 주문번호 발번 + 재고 차감 + 주문 생성 을 한 트랜잭션으로
+    async createOrder(items, received, register) {
+      const orderRef = F.doc(col('orders'));
+      return F.runTransaction(db, async (tx) => {
+        const cRef = ref('counters', `register${register}`);   // 계산대마다 따로 센다
+        const menuRefs = items.map((i) => ref('menus', i.menuId));
+        const cSnap = await tx.get(cRef);
+        const mSnaps = [];
+        for (const r of menuRefs) mSnaps.push(await tx.get(r));
+
+        mSnaps.forEach((s, i) => {
+          if (!s.exists()) throw new Error(`'${items[i].name}' 메뉴가 삭제되었습니다.`);
+          const cur = s.data().stockCurrent ?? 0;
+          if (cur < items[i].qty) throw new Error(`'${items[i].name}' 재고 부족 (남은 수량 ${cur}개)`);
+        });
+
+        const today = todayStr();
+        const c = cSnap.exists() ? cSnap.data() : null;
+        const seq = c && c.date === today ? c.value + 1 : 1;   // 날짜가 바뀌면 처음 구간부터
+        const orderNo = orderNoFor(register, seq);
+
+        const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+        tx.set(cRef, { value: seq, date: today });
+        menuRefs.forEach((r, i) => tx.update(r, { stockCurrent: F.increment(-items[i].qty) }));
+        tx.set(orderRef, {
+          orderNo, register, items, total, received, change: received - total,
+          status: 'waiting', createdAt: Date.now(), readyAt: null, cancelledAt: null,
+        });
+        return orderNo;
+      });
+    },
+
+    // 주문 취소: 상태 변경 + 재고 복구 (트랜잭션으로 중복 취소 방지)
+    async cancelOrder(orderId) {
+      await F.runTransaction(db, async (tx) => {
+        const oRef = ref('orders', orderId);
+        const oSnap = await tx.get(oRef);
+        if (!oSnap.exists()) throw new Error('주문을 찾을 수 없습니다.');
+        const o = oSnap.data();
+        if (o.status === 'cancelled') throw new Error('이미 취소된 주문입니다.');
+        const menuRefs = o.items.map((i) => ref('menus', i.menuId));
+        const mSnaps = [];
+        for (const r of menuRefs) mSnaps.push(await tx.get(r));
+        tx.update(oRef, { status: 'cancelled', cancelledAt: Date.now() });
+        mSnaps.forEach((s, i) => { if (s.exists()) tx.update(menuRefs[i], { stockCurrent: F.increment(o.items[i].qty) }); });
+      });
+    },
+
+    async setReady(orderId, ready) {
+      await F.updateDoc(ref('orders', orderId), ready
+        ? { status: 'ready', readyAt: Date.now() }
+        : { status: 'waiting', readyAt: null });
+    },
+
+    async addMenu(data) {
+      await F.addDoc(col('menus'), data);
+    },
+    async updateMenu(id, fields) {
+      await F.updateDoc(ref('menus', id), fields);
+    },
+    // 초기 수량 변경: 차이만큼 초기값·현재값을 함께 원자적으로 증감
+    async changeStockInitial(id, delta) {
+      await F.updateDoc(ref('menus', id), { stockInitial: F.increment(delta), stockCurrent: F.increment(delta) });
+    },
+    async deleteMenu(id) {
+      await F.deleteDoc(ref('menus', id));
+    },
+
+    // 보충(+) / 폐기·증정(-) — 재고만 변경, 매출 미반영
+    async adjust(menuId, type, qty, memo) {
+      const batch = F.writeBatch(db);
+      batch.set(F.doc(col('adjustments')), { menuId, type, qty, memo: memo || '', createdAt: Date.now() });
+      batch.update(ref('menus', menuId), { stockCurrent: F.increment(type === 'restock' ? qty : -qty) });
+      await batch.commit();
+    },
+
+    async saveSettings(fields) {
+      await F.setDoc(ref('settings', 'app'), fields, { merge: true });
+    },
+
+    // 데이터 초기화: 주문·조정 이력·주문번호 삭제, 재고는 초기값으로 되돌림 (메뉴는 유지)
+    async resetAll() {
+      const docs = [];
+      for (const name of ['orders', 'adjustments', 'counters']) {
+        const snap = await F.getDocs(col(name));
+        snap.forEach((d) => docs.push(d.ref));
+      }
+      const menus = await F.getDocs(col('menus'));
+      const ops = [
+        ...docs.map((r) => (b) => b.delete(r)),
+        ...menus.docs.map((d) => (b) => b.update(d.ref, { stockCurrent: d.data().stockInitial ?? 0 })),
+      ];
+      for (let i = 0; i < ops.length; i += 400) {
+        const b = F.writeBatch(db);
+        ops.slice(i, i + 400).forEach((op) => op(b));
+        await b.commit();
+      }
+    },
+  };
+}
+
+/* =====================================================================
+   데이터 계층 2) 로컬 백엔드 (Firebase 설정 전 연습용)
+   - localStorage 에 저장, 같은 기기의 다른 탭과 storage 이벤트로 동기화
+   ===================================================================== */
+function createLocalBackend() {
+  const KEY = CONFIG.localStorageKey;
+  const load = () => {
+    try {
+      return JSON.parse(localStorage.getItem(KEY)) || null;
+    } catch { return null; }
+  };
+  const blank = () => ({ menus: {}, orders: {}, adjustments: {}, settings: {}, counter: null });
+  let mem = load() || blank();   // localStorage 사용 불가 환경 대비 메모리 사본
+
+  const publish = () => {
+    setCollection('menus', Object.entries(mem.menus).map(([id, d]) => ({ id, ...d })));
+    setCollection('orders', Object.entries(mem.orders).map(([id, d]) => ({ id, ...d })));
+    setCollection('adjustments', Object.entries(mem.adjustments).map(([id, d]) => ({ id, ...d })));
+    setCollection('settings', mem.settings);
+  };
+  // 모든 변경은 최신 저장본을 읽고 → 수정 → 저장 (탭 간 덮어쓰기 최소화)
+  const mutate = (fn) => {
+    mem = load() || mem;
+    const result = fn(mem);
+    try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (e) { console.warn(e); }
+    publish();
+    return result;
+  };
+
+  return {
+    mode: 'local',
+    start() {
+      window.addEventListener('storage', (e) => { if (e.key === KEY) { mem = load() || blank(); publish(); } });
+      publish();
+    },
+    async createOrder(items, received, register) {
+      return mutate((db) => {
+        items.forEach((i) => {
+          const m = db.menus[i.menuId];
+          if (!m) throw new Error(`'${i.name}' 메뉴가 삭제되었습니다.`);
+          if (m.stockCurrent < i.qty) throw new Error(`'${i.name}' 재고 부족 (남은 수량 ${m.stockCurrent}개)`);
+        });
+        const today = todayStr();
+        db.counters = db.counters || {};
+        const c = db.counters[register];
+        const seq = c && c.date === today ? c.value + 1 : 1;
+        db.counters[register] = { value: seq, date: today };
+        const orderNo = orderNoFor(register, seq);
+        items.forEach((i) => { db.menus[i.menuId].stockCurrent -= i.qty; });
+        const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+        db.orders[uid()] = {
+          orderNo, register, items, total, received, change: received - total,
+          status: 'waiting', createdAt: Date.now(), readyAt: null, cancelledAt: null,
+        };
+        return orderNo;
+      });
+    },
+    async cancelOrder(orderId) {
+      mutate((db) => {
+        const o = db.orders[orderId];
+        if (!o) throw new Error('주문을 찾을 수 없습니다.');
+        if (o.status === 'cancelled') throw new Error('이미 취소된 주문입니다.');
+        o.status = 'cancelled'; o.cancelledAt = Date.now();
+        o.items.forEach((i) => { if (db.menus[i.menuId]) db.menus[i.menuId].stockCurrent += i.qty; });
+      });
+    },
+    async setReady(orderId, ready) {
+      mutate((db) => {
+        const o = db.orders[orderId]; if (!o) return;
+        Object.assign(o, ready ? { status: 'ready', readyAt: Date.now() } : { status: 'waiting', readyAt: null });
+      });
+    },
+    async addMenu(data) { mutate((db) => { db.menus[uid()] = data; }); },
+    async updateMenu(id, fields) { mutate((db) => { if (db.menus[id]) Object.assign(db.menus[id], fields); }); },
+    async changeStockInitial(id, delta) {
+      mutate((db) => { const m = db.menus[id]; if (m) { m.stockInitial += delta; m.stockCurrent += delta; } });
+    },
+    async deleteMenu(id) { mutate((db) => { delete db.menus[id]; }); },
+    async adjust(menuId, type, qty, memo) {
+      mutate((db) => {
+        db.adjustments[uid()] = { menuId, type, qty, memo: memo || '', createdAt: Date.now() };
+        if (db.menus[menuId]) db.menus[menuId].stockCurrent += type === 'restock' ? qty : -qty;
+      });
+    },
+    async saveSettings(fields) { mutate((db) => { Object.assign(db.settings, fields); }); },
+    async resetAll() {
+      mutate((db) => {
+        db.orders = {}; db.adjustments = {}; db.counters = {};
+        Object.values(db.menus).forEach((m) => { m.stockCurrent = m.stockInitial; });
+      });
+    },
+  };
+}
+
+let DB = null;
+
+function setNetState(state) {
+  const tag = $('#netTag');
+  if (!DB) return;
+  if (DB.mode === 'local') { tag.textContent = '로컬 모드'; tag.className = 'net local'; return; }
+  const off = state === 'off' || !navigator.onLine;
+  tag.textContent = off ? '오프라인 (복구 시 자동 동기화)' : '실시간 연결됨';
+  tag.className = off ? 'net off' : 'net';
+}
+window.addEventListener('online', () => setNetState('on'));
+window.addEventListener('offline', () => setNetState('off'));
+</script>
+<script>
+/* =====================================================================
+   모달 · 토스트
+   ===================================================================== */
+function openModal(html) {
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.innerHTML = `<div class="modal">${html}</div>`;
+  $('#modalRoot').appendChild(back);
+  return back;
+}
+
+// 확인 모달 → true / false
+function confirmModal({ title, msg, okText = '확인', okClass = 'primary', cancelText = '취소' }) {
+  return new Promise((resolve) => {
+    const m = openModal(`
+      <h2>${esc(title)}</h2>
+      <div class="msg">${msg}</div>
+      <div class="actions">
+        <button class="btn ghost" data-r="0">${esc(cancelText)}</button>
+        <button class="btn ${okClass}" data-r="1">${esc(okText)}</button>
+      </div>`);
+    m.querySelectorAll('[data-r]').forEach((b) => b.onclick = () => { m.remove(); resolve(b.dataset.r === '1'); });
+  });
+}
+
+// 숫자 입력 모달 (키패드) → 숫자 / null
+function numberModal(title, initial = 0, unit = '개') {
+  return new Promise((resolve) => {
+    let val = String(initial || '');
+    const m = openModal(`
+      <h2>${esc(title)}</h2>
+      <div class="qty-display"><span id="nmVal"></span> ${esc(unit)}</div>
+      <div class="keypad">
+        ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button data-k="${n}">${n}</button>`).join('')}
+        <button data-k="C">C</button><button data-k="0">0</button><button data-k="B">⌫</button>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" data-r="0">취소</button>
+        <button class="btn primary" data-r="1">확인</button>
+      </div>`);
+    const show = () => { m.querySelector('#nmVal').textContent = Number(val || 0).toLocaleString('ko-KR'); };
+    show();
+    m.querySelectorAll('[data-k]').forEach((b) => b.onclick = () => {
+      const k = b.dataset.k;
+      if (k === 'C') val = '';
+      else if (k === 'B') val = val.slice(0, -1);
+      else if (val.length < 7) val = (val + k).replace(/^0+/, '');
+      show();
+    });
+    m.querySelectorAll('[data-r]').forEach((b) => b.onclick = () => {
+      m.remove();
+      resolve(b.dataset.r === '1' ? Number(val || 0) : null);
+    });
+  });
+}
+
+let toastTimer = null;
+function toast(text, { actionText, onAction, ms = 3000 } = {}) {
+  clearTimeout(toastTimer);
+  const root = $('#toastRoot');
+  root.innerHTML = `<div class="toast"><span>${esc(text)}</span>${actionText ? `<button>${esc(actionText)}</button>` : ''}</div>`;
+  if (actionText) root.querySelector('button').onclick = () => { root.innerHTML = ''; onAction(); };
+  toastTimer = setTimeout(() => { root.innerHTML = ''; }, ms);
+}
+
+// DB 호출 공통 에러 처리
+async function run(fn, okMsg) {
+  try {
+    const r = await fn();
+    if (okMsg) toast(okMsg);
+    return r;
+  } catch (e) {
+    console.error(e);
+    await confirmModal({ title: '처리 실패', msg: esc(e.message || e), okText: '확인', cancelText: '닫기' });
+    return undefined;
+  }
+}
+
+/* =====================================================================
+   역할(화면) 전환
+   ===================================================================== */
+let role = null;
+try { role = localStorage.getItem(CONFIG.roleKey); } catch {}
+if (!ROLES[role]) role = null;
+
+const VIEWS = {};   // role → { render(), onData(name), leave() }
+
+function setRole(r) {
+  if (currentView()?.leave) currentView().leave();
+  role = r;
+  try { r ? localStorage.setItem(CONFIG.roleKey, r) : localStorage.removeItem(CONFIG.roleKey); } catch {}
+  renderApp();
+}
+function changeRole() { setRole(null); }
+function currentView() { return role ? VIEWS[role.startsWith('order') ? 'order' : role] : null; }
+
+function renderApp() {
+  document.body.classList.toggle('display-mode', role === 'display');
+  $('#roleTag').textContent = role ? `${ROLES[role].icon} ${ROLES[role].label}` : '역할 선택';
+  if (!role) {
+    $('#app').innerHTML = `
+      <div style="text-align:center;margin-top:24px">
+        <h2 style="font-size:28px">이 기기의 역할을 선택하세요</h2>
+        <div style="color:var(--muted)">선택값은 이 기기에 저장되어 새로고침해도 유지됩니다.</div>
+      </div>
+      <div class="role-grid">
+        ${Object.entries(ROLES).map(([k, v]) => `
+          <button onclick="setRole('${k}')"><span>${v.icon}</span>${v.label}<small>${v.desc}</small></button>`).join('')}
+      </div>`;
+    return;
+  }
+  currentView().render();
+}
+
+function onDataChange(name) {
+  const v = currentView();
+  if (v && v.onData) v.onData(name);
+}
+
+const allReady = () => S.ready.menus && S.ready.orders && S.ready.settings;
+const loadingHtml = '<div class="empty">데이터 불러오는 중…</div>';
+
+/* =====================================================================
+   결제 화면 (Order / Cashier)
+   ===================================================================== */
+const Cashier = {
+  cart: {},        // menuId → 수량
+  recv: '',        // 받은 돈 (문자열)
+  press: null,     // 길게 누르기 상태
+  busy: false,
+
+  render() {
+    if (!allReady()) { $('#app').innerHTML = loadingHtml; return; }
+    this.cleanCart();
+    const menus = S.menus.filter((m) => m.visible !== false);
+    const items = this.cartItems();
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+    const recv = Number(this.recv || 0);
+    const change = recv - total;
+    const canPay = items.length > 0 && recv >= total && !this.busy;
+    const quick = (S.settings.quickCash || CONFIG.defaults.quickCash);
+
+    let changeHtml;
+    if (!items.length) changeHtml = `<div class="change-box"><div class="label">메뉴를 선택하세요</div><div class="amt">-</div></div>`;
+    else if (recv < total) changeHtml = `<div class="change-box short"><div class="label">받은 돈이 부족합니다</div><div class="amt">${money(total - recv)} 부족</div></div>`;
+    else changeHtml = `<div class="change-box"><div class="label">거스름돈</div><div class="amt">${money(change)}</div></div>`;
+
+    $('#app').innerHTML = `
+      <div class="order-layout">
+        <div>
+          <div class="menu-grid">
+            ${menus.length ? menus.map((m) => this.tileHtml(m)).join('') : '<div class="empty" style="grid-column:1/-1">등록된 메뉴가 없습니다.<br>설정·정산 화면에서 메뉴를 추가하세요.</div>'}
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h2>최근 주문</h2>
+            ${this.recentHtml()}
+          </div>
+        </div>
+        <div class="side">
+         <div class="col">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h2 style="margin:0">장바구니</h2>
+              <button class="btn small ghost" onclick="Cashier.clear()" ${items.length ? '' : 'disabled'}>전체 비우기</button>
+            </div>
+            <div class="cart-list">
+              ${items.length ? items.map((i) => `
+                <div class="cart-row">
+                  <span class="n">${esc(i.name)}</span>
+                  <span>×${i.qty}</span>
+                  <span style="width:100px;text-align:right">${money(i.price * i.qty)}</span>
+                  <button class="del" onclick="Cashier.remove('${i.menuId}')">✕</button>
+                </div>`).join('') : '<div style="color:var(--muted);padding:12px 0">메뉴를 탭하면 추가됩니다. (길게 누르면 수량 입력)</div>'}
+            </div>
+            <div class="total-line"><span>총 결제 금액</span><span class="big">${money(total)}</span></div>
+          </div>
+          ${changeHtml}
+          <button class="pay-btn" onclick="Cashier.pay()" ${canPay ? '' : 'disabled'}>${this.busy ? '처리 중…' : '결제 완료'}</button>
+         </div>
+         <div class="col">
+          <div class="card">
+            <div class="total-line" style="margin:0"><span>받은 돈</span><span class="received">${money(recv)}</span></div>
+            <div class="quick">
+              ${quick.map((q) => `<button onclick="Cashier.addRecv(${q})">+${Number(q).toLocaleString('ko-KR')}</button>`).join('')}
+              <button onclick="Cashier.exact()" style="background:#e7f5ff;border-color:#a5d8ff">딱 맞게</button>
+            </div>
+            <div class="keypad">
+              ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button onclick="Cashier.key('${n}')">${n}</button>`).join('')}
+              <button onclick="Cashier.key('00')">00</button><button onclick="Cashier.key('0')">0</button><button onclick="Cashier.key('B')">⌫</button>
+            </div>
+            <button class="btn ghost small" style="width:100%;margin-top:8px" onclick="Cashier.key('C')">받은 돈 지우기</button>
+          </div>
+         </div>
+        </div>
+      </div>`;
+  },
+
+  onData() { this.render(); },
+
+  tileHtml(m) {
+    const q = this.cart[m.id] || 0;
+    const stock = m.stockCurrent ?? 0;
+    const soldout = stock <= 0;
+    const low = !soldout && stock <= (m.threshold ?? CONFIG.defaults.threshold);
+    return `
+      <button class="tile ${soldout ? 'soldout' : ''}" ${soldout ? 'disabled' : ''}
+        onpointerdown="Cashier.down(event,'${m.id}')" onpointerup="Cashier.up(event,'${m.id}')"
+        onpointerleave="Cashier.cancelPress()" onpointercancel="Cashier.cancelPress()" oncontextmenu="return false">
+        ${low ? `<span class="low-badge">재고 ${stock}</span>` : ''}
+        ${q ? `<span class="qty-badge">${q}</span>` : ''}
+        <span class="name">${esc(m.name)}</span>
+        <span class="price">${money(m.price)}</span>
+        <span class="stock">남은 수량 ${stock}</span>
+      </button>`;
+  },
+
+  recentHtml() {
+    const list = S.orders.slice(-CONFIG.recentOrderCount).reverse();
+    if (!list.length) return '<div style="color:var(--muted)">아직 주문이 없습니다.</div>';
+    const label = { waiting: '조리 대기', ready: '준비 완료', cancelled: '취소됨' };
+    return list.map((o) => `
+      <div class="recent-row">
+        <span class="no">${o.orderNo}</span>
+        <span class="desc">${esc(itemsText(o.items))}<br><small style="color:var(--muted)">${o.register ? `결제 ${o.register} · ` : ''}${timeStr(o.createdAt)} · ${money(o.total)}</small></span>
+        <span class="status ${o.status}">${label[o.status]}</span>
+        ${o.status !== 'cancelled' ? `<button class="btn small danger" onclick="Cashier.cancelOrder('${o.id}')">취소</button>` : ''}
+      </div>`).join('');
+  },
+
+  // 삭제·숨김·매진된 메뉴는 장바구니에서 정리
+  cleanCart() {
+    for (const id of Object.keys(this.cart)) {
+      const m = S.menus.find((x) => x.id === id);
+      if (!m || m.visible === false || (m.stockCurrent ?? 0) <= 0) delete this.cart[id];
+      else if (this.cart[id] > m.stockCurrent) this.cart[id] = m.stockCurrent;
+    }
+  },
+
+  cartItems() {
+    return Object.entries(this.cart)
+      .map(([menuId, qty]) => {
+        const m = S.menus.find((x) => x.id === menuId);
+        return m ? { menuId, name: m.name, price: Number(m.price) || 0, qty } : null;
+      })
+      .filter((x) => x && x.qty > 0);
+  },
+
+  // ---- 메뉴 타일: 탭 = +1, 길게 누르기 = 수량 직접 입력 ----
+  down(e, id) {
+    this.cancelPress();
+    this.press = { id, long: false, timer: setTimeout(() => { this.press.long = true; this.askQty(id); }, CONFIG.longPressMs) };
+  },
+  up(e, id) {
+    if (!this.press || this.press.id !== id) return;
+    clearTimeout(this.press.timer);
+    const wasLong = this.press.long;
+    this.press = null;
+    if (!wasLong) this.setQty(id, (this.cart[id] || 0) + 1);
+  },
+  cancelPress() {
+    if (this.press) { clearTimeout(this.press.timer); if (!this.press.long) this.press = null; }
+  },
+  async askQty(id) {
+    const m = S.menus.find((x) => x.id === id);
+    this.press = null;
+    if (!m) return;
+    const n = await numberModal(`${m.name} 수량 입력 (최대 ${m.stockCurrent})`, this.cart[id] || 0);
+    if (n !== null) this.setQty(id, n);
+  },
+  setQty(id, qty) {
+    const m = S.menus.find((x) => x.id === id);
+    if (!m) return;
+    if (qty > m.stockCurrent) { toast(`${m.name}: 남은 수량이 ${m.stockCurrent}개입니다.`); qty = m.stockCurrent; }
+    if (qty <= 0) delete this.cart[id]; else this.cart[id] = qty;
+    this.render();
+  },
+  remove(id) { delete this.cart[id]; this.render(); },
+  clear() { this.cart = {}; this.recv = ''; this.render(); },
+
+  // ---- 받은 돈 입력 ----
+  key(k) {
+    if (k === 'C') this.recv = '';
+    else if (k === 'B') this.recv = this.recv.slice(0, -1);
+    else if (this.recv.length < 8) this.recv = (this.recv + k).replace(/^0+/, '');
+    this.render();
+  },
+  addRecv(n) { this.recv = String(Number(this.recv || 0) + Number(n)); this.render(); },
+  exact() {
+    const total = this.cartItems().reduce((s, i) => s + i.price * i.qty, 0);
+    this.recv = total ? String(total) : '';
+    this.render();
+  },
+
+  // ---- 결제 확정 ----
+  async pay() {
+    const items = this.cartItems();
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+    const recv = Number(this.recv || 0);
+    if (!items.length || recv < total || this.busy) return;
+    const ok = await confirmModal({
+      title: '결제를 완료할까요?',
+      msg: `${esc(itemsText(items))}\n\n총액 <b>${money(total)}</b>\n받은 돈 <b>${money(recv)}</b>\n거스름돈 <b style="color:var(--ok);font-size:26px">${money(recv - total)}</b>`,
+      okText: '결제 완료', okClass: 'ok',
+    });
+    if (!ok) return;
+    this.busy = true; this.render();
+    const register = Number(role.slice(5));
+    const no = await run(() => DB.createOrder(items, recv, register));
+    this.busy = false;
+    if (no === undefined) { this.render(); return; }
+    this.cart = {}; this.recv = '';
+    this.render();
+    const m = openModal(`
+      <h2 style="text-align:center">주문번호</h2>
+      <div class="done-no">${no}</div>
+      <div style="text-align:center;font-size:20px">식권에 <b>${no}번</b>을 적어 전달하세요</div>
+      ${(no - 1) % CONFIG.orderBlockSize === CONFIG.orderBlockSize - 1 ? `
+        <div style="text-align:center;margin-top:10px;padding:10px;border-radius:12px;background:#fff3bf;font-size:18px;font-weight:700">
+          📢 이 계산대의 ${no - CONFIG.orderBlockSize + 1}~${no}번을 다 썼어요!<br>다음 손님은 <b>${no + (CONFIG.cashierCount - 1) * CONFIG.orderBlockSize + 1}번</b>부터예요.</div>` : ''}
+      <div class="change-box" style="margin-top:16px"><div class="label">거스름돈</div><div class="amt">${money(recv - total)}</div></div>
+      <div class="actions"><button class="btn primary">다음 손님</button></div>`);
+    m.querySelector('button').onclick = () => m.remove();
+  },
+
+  async cancelOrder(id) {
+    const o = S.orders.find((x) => x.id === id);
+    if (!o) return;
+    const ok = await confirmModal({
+      title: `${o.orderNo}번 주문 취소`,
+      msg: `${esc(itemsText(o.items))}\n${money(o.total)} 을(를) 환불하고 재고를 복구합니다.${o.status === 'ready' ? '\n\n⚠️ 이미 준비 완료된 주문입니다.' : ''}`,
+      okText: '주문 취소', okClass: 'danger', cancelText: '닫기',
+    });
+    if (ok) await run(() => DB.cancelOrder(id), `${o.orderNo}번 주문이 취소되었습니다.`);
+  },
+};
+VIEWS.order = Cashier;
+
+/* =====================================================================
+   조리대 화면 (Kitchen)
+   ===================================================================== */
+const Kitchen = {
+  timer: null,
+
+  render() {
+    if (!allReady()) { $('#app').innerHTML = loadingHtml; return; }
+    const waiting = S.orders.filter((o) => o.status === 'waiting');   // createdAt 오름차순 = 오래된 주문이 먼저
+    // 메뉴별 조리 필요 수량 합계
+    const need = {};
+    waiting.forEach((o) => o.items.forEach((i) => { need[i.name] = (need[i.name] || 0) + i.qty; }));
+
+    $('#app').innerHTML = `
+      <div class="summary-bar">
+        <span class="chip">대기 주문 <b>${waiting.length}</b>건</span>
+        ${Object.entries(need).map(([n, q]) => `<span class="chip">${esc(n)} <b>${q}</b></span>`).join('')}
+      </div>
+      ${waiting.length ? `<div class="kitchen-grid">${waiting.map((o) => `
+        <div class="k-card" data-created="${o.createdAt}">
+          <div class="head"><span class="no">${o.orderNo}</span><span class="elapsed"></span></div>
+          <ul>${o.items.map((i) => `<li><span>${esc(i.name)}</span><span>×${i.qty}</span></li>`).join('')}</ul>
+          <button class="ready-btn" onclick="Kitchen.ready('${o.id}', ${o.orderNo})">준비 완료</button>
+        </div>`).join('')}</div>` : '<div class="empty">🍜 대기 중인 주문이 없습니다</div>'}`;
+    this.tick();
+    if (!this.timer) this.timer = setInterval(() => this.tick(), 1000);
+  },
+
+  // 경과 시간만 갱신 (버튼 터치 중 화면이 다시 그려지지 않도록)
+  tick() {
+    const lateMs = (S.settings.lateMinutes ?? CONFIG.defaults.lateMinutes) * 60000;
+    document.querySelectorAll('.k-card').forEach((c) => {
+      const ms = Date.now() - Number(c.dataset.created);
+      const s = Math.max(0, Math.floor(ms / 1000));
+      c.querySelector('.elapsed').textContent = `⏱ ${Math.floor(s / 60)}분 ${pad2(s % 60)}초`;
+      c.classList.toggle('late', ms >= lateMs);
+    });
+  },
+
+  onData(name) { if (name !== 'adjustments') this.render(); },
+  leave() { clearInterval(this.timer); this.timer = null; },
+
+  async ready(id, no) {
+    try {
+      await DB.setReady(id, true);
+    } catch (e) {
+      console.error(e);
+      toast(`처리 실패: ${e.message}`);
+      return;
+    }
+    toast(`${no}번 준비 완료 → 호출했습니다`, {
+      actionText: '되돌리기',
+      ms: CONFIG.undoSeconds * 1000,
+      onAction: () => run(() => DB.setReady(id, false), `${no}번을 대기 목록으로 되돌렸습니다.`),
+    });
+  },
+};
+VIEWS.kitchen = Kitchen;
+</script>
+<script>
+/* =====================================================================
+   호출 연출: 기내 안내방송 스타일 차임음 + 음성합성
+   ===================================================================== */
+const Sound = {
+  ctx: null,
+  koVoice: null,
+
+  unlock() {
+    try {
+      this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+      this.ctx.resume();
+    } catch (e) { console.warn('오디오 사용 불가', e); }
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      speechSynthesis.speak(u);
+      this.pickVoice();
+      speechSynthesis.onvoiceschanged = () => this.pickVoice();
+    }
+  },
+
+  pickVoice() {
+    const voices = speechSynthesis.getVoices();
+    this.koVoice = voices.find((v) => v.lang === 'ko-KR' && /google/i.test(v.name))
+      || voices.find((v) => v.lang && v.lang.toLowerCase().startsWith('ko')) || null;
+  },
+
+  // "딩-동" 두 음 (배음을 섞어 부드러운 종소리 느낌)
+  chime() {
+    return new Promise((resolve) => {
+      if (!this.ctx) { resolve(); return; }
+      const t0 = this.ctx.currentTime + 0.05;
+      const tone = (freq, start, dur) => {
+        [[1, 0.5], [2, 0.12], [3, 0.05]].forEach(([mult, gainVal]) => {
+          const o = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          o.type = 'sine';
+          o.frequency.value = freq * mult;
+          g.gain.setValueAtTime(0.0001, start);
+          g.gain.exponentialRampToValueAtTime(gainVal * (S.settings.ttsVolume ?? 1) + 0.0001, start + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+          o.connect(g).connect(this.ctx.destination);
+          o.start(start);
+          o.stop(start + dur + 0.05);
+        });
+      };
+      tone(659.25, t0, 1.4);        // E5 (딩)
+      tone(523.25, t0 + 0.7, 1.8);  // C5 (동)
+      setTimeout(resolve, 2300);
+    });
+  },
+
+  speak(text) {
+    return new Promise((resolve) => {
+      if (!('speechSynthesis' in window)) { resolve(); return; }
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ko-KR';
+      if (this.koVoice) u.voice = this.koVoice;
+      u.rate = Number(S.settings.ttsRate ?? 1);
+      u.volume = Number(S.settings.ttsVolume ?? 1);
+      let done = false;
+      const finish = () => { if (!done) { done = true; resolve(); } };
+      u.onend = finish; u.onerror = finish;
+      setTimeout(finish, 8000);   // 일부 브라우저에서 onend 가 오지 않는 경우 대비
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    });
+  },
+
+  async announce(no) {
+    if (S.settings.chime !== false) await this.chime();
+    await this.speak(`${no}번 손님, 라면이 준비되었습니다.`);
+  },
+};
+
+/* =====================================================================
+   호출 화면 (Display) — 손님용, 조작 없음
+   ===================================================================== */
+const Display = {
+  started: false,
+  seen: null,        // 이미 호출한 "주문id@준비시각" 집합
+  queue: [],
+  playing: false,
+  flashNo: null,
+
+  render() {
+    // 이미 데이터가 있는 상태로 화면에 들어온 경우, 기존 호출은 방송하지 않도록 기준점 설정
+    if (this.seen === null && S.ready.orders) this.seen = new Set(this.readyKeys().keys);
+    const ready = S.orders.filter((o) => o.status === 'ready').sort((a, b) => b.readyAt - a.readyAt);
+    // 호출 중인 번호가 있으면 그 번호를 가운데에 표시
+    const cur = this.flashNo ?? ready[0]?.orderNo;
+    const prev = ready.map((o) => o.orderNo).filter((n) => n !== cur).slice(0, 4);
+    $('#app').innerHTML = `
+      <div class="display">
+        <div class="title">${esc(CONFIG.storeName)}</div>
+        <div class="label">${cur != null ? '호출 번호' : ''}</div>
+        <div class="current ${this.flashNo != null ? 'flash' : ''}" id="dispCur">${cur != null ? cur : '🍜'}</div>
+        <div class="msg">${cur != null ? `${cur}번 손님, 라면이 준비되었습니다!` : '주문하신 라면을 맛있게 끓이고 있어요'}</div>
+        ${prev.length ? `<div class="prev-label" style="margin-top:auto">이전 호출</div>` : ''}
+        <div class="prev" style="${prev.length ? 'margin-top:1vh' : ''}">${prev.map((n) => `<span class="p">${n}</span>`).join('')}</div>
+        <div class="foot">Made by 정우쌤</div>
+      </div>
+      ${this.started ? '' : `
+        <div class="start-overlay" onclick="Display.start()">
+          📢 화면을 터치하여 호출 화면 시작
+          <small>소리 재생 허용과 전체화면 전환을 위해 한 번 터치가 필요합니다</small>
+        </div>`}
+      <button class="display-exit" ondblclick="Display.exit()">나가기(더블클릭)</button>`;
+  },
+
+  start() {
+    Sound.unlock();
+    this.started = true;
+    try { document.documentElement.requestFullscreen?.(); } catch {}
+    this.render();
+  },
+
+  exit() {
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch {}
+    changeRole();
+  },
+
+  readyKeys() {
+    const ready = S.orders.filter((o) => o.status === 'ready' && o.readyAt).sort((a, b) => a.readyAt - b.readyAt);
+    return { ready, keys: ready.map((o) => `${o.id}@${o.readyAt}`) };
+  },
+
+  onData(name) {
+    if (name !== 'orders' && name !== 'settings') return;
+    const { ready, keys } = this.readyKeys();
+    if (this.seen === null) {
+      // 첫 로딩 때는 기존 호출을 다시 방송하지 않는다
+      if (S.ready.orders) this.seen = new Set(keys);
+    } else {
+      ready.forEach((o, i) => {
+        if (!this.seen.has(keys[i])) { this.seen.add(keys[i]); this.queue.push(o.orderNo); }
+      });
+      this.playQueue();
+    }
+    if (this.flashNo == null) this.render();
+  },
+
+  async playQueue() {
+    if (this.playing) return;
+    this.playing = true;
+    while (this.queue.length) {
+      const no = this.queue.shift();
+      this.flashNo = no;
+      this.render();
+      if (this.started) await Sound.announce(no);
+      else await new Promise((r) => setTimeout(r, 3000));
+      await new Promise((r) => setTimeout(r, 600));
+    }
+    this.flashNo = null;
+    this.playing = false;
+    this.render();
+  },
+
+  leave() {
+    this.queue = []; this.flashNo = null; this.seen = null;
+    try { speechSynthesis.cancel(); } catch {}
+  },
+};
+VIEWS.display = Display;
+
+/* =====================================================================
+   정산 계산
+   ===================================================================== */
+function computeReport(bucketMin = 30) {
+  const valid = S.orders.filter((o) => o.status !== 'cancelled');
+  const cancelled = S.orders.filter((o) => o.status === 'cancelled');
+  const totalSales = valid.reduce((s, o) => s + o.total, 0);
+
+  // 메뉴별 판매
+  const byMenu = {};
+  valid.forEach((o) => o.items.forEach((i) => {
+    const r = byMenu[i.menuId] || (byMenu[i.menuId] = { menuId: i.menuId, name: i.name, qty: 0, amount: 0 });
+    r.qty += i.qty; r.amount += i.qty * i.price;
+  }));
+  const menuSales = Object.values(byMenu).sort((a, b) => b.amount - a.amount);
+
+  // 계산대별 매출 (돈통 정산용)
+  const byRegister = Array.from({ length: CONFIG.cashierCount }, (_, i) => {
+    const list = valid.filter((o) => o.register === i + 1);
+    return { register: i + 1, count: list.length, amount: list.reduce((s, o) => s + o.total, 0) };
+  });
+
+  // 시간대별 매출
+  const buckets = [];
+  if (valid.length) {
+    const size = bucketMin * 60000;
+    const floor = (ms) => { const d = new Date(ms); d.setSeconds(0, 0); d.setMinutes(Math.floor(d.getMinutes() / bucketMin) * bucketMin); return d.getTime(); };
+    const start = floor(Math.min(...valid.map((o) => o.createdAt)));
+    const end = floor(Math.max(...valid.map((o) => o.createdAt)));
+    for (let t = start; t <= end; t += size) buckets.push({ t, amount: 0, count: 0 });
+    valid.forEach((o) => {
+      const b = buckets[Math.floor((floor(o.createdAt) - start) / size)];
+      if (b) { b.amount += o.total; b.count += 1; }
+    });
+  }
+
+  // 재고 대사표
+  const recon = S.menus.map((m) => {
+    const adj = S.adjustments.filter((a) => a.menuId === m.id);
+    const sum = (type) => adj.filter((a) => a.type === type).reduce((s, a) => s + a.qty, 0);
+    const restock = sum('restock');
+    const waste = sum('waste') + sum('gift');
+    const sold = byMenu[m.id]?.qty || 0;
+    const theory = (m.stockInitial ?? 0) + restock - sold - waste;
+    return { name: m.name, initial: m.stockInitial ?? 0, restock, sold, waste, theory, current: m.stockCurrent ?? 0 };
+  });
+
+  return { valid, cancelled, totalSales, count: valid.length, avg: valid.length ? Math.round(totalSales / valid.length) : 0, menuSales, byRegister, buckets, recon };
+}
+
+/* =====================================================================
+   CSV 내보내기 (엑셀 한글 깨짐 방지를 위해 BOM 추가)
+   ===================================================================== */
+function csvCell(v) { const s = String(v ?? ''); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
+function downloadCsv(filename, rows) {
+  const text = '﻿' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const typeLabel = { restock: '보충', waste: '폐기', gift: '증정' };
+const statusLabel = { waiting: '조리대기', ready: '준비완료', cancelled: '취소' };
+const menuName = (id) => S.menus.find((m) => m.id === id)?.name || '(삭제된 메뉴)';
+
+function exportSummaryCsv(bucketMin) {
+  const R = computeReport(bucketMin);
+  const rows = [
+    ['[요약]'], ['총 매출', R.totalSales], ['주문 건수', R.count], ['평균 객단가', R.avg], ['취소 건수', R.cancelled.length], [],
+    ['[계산대별 매출]'], ['계산대', '주문 건수', '매출'], ...R.byRegister.map((r) => [`결제 ${r.register}`, r.count, r.amount]), [],
+    ['[메뉴별 판매]'], ['메뉴', '판매 수량', '매출'], ...R.menuSales.map((m) => [m.name, m.qty, m.amount]), [],
+    [`[시간대별 매출 (${bucketMin}분 단위)]`], ['시작 시각', '주문 건수', '매출'], ...R.buckets.map((b) => [timeStr(b.t), b.count, b.amount]), [],
+    ['[재고 대사표]'], ['메뉴', '초기 수량', '보충', '판매', '폐기·증정', '이론상 잔여', '현재 재고'],
+    ...R.recon.map((r) => [r.name, r.initial, r.restock, r.sold, r.waste, r.theory, r.current]), [],
+    ['[재고 조정 이력]'], ['시각', '메뉴', '구분', '수량', '메모'],
+    ...S.adjustments.map((a) => [dateTimeStr(a.createdAt), menuName(a.menuId), typeLabel[a.type], a.qty, a.memo]), [],
+    ['[취소 내역]'], ['주문번호', '주문 시각', '취소 시각', '메뉴', '금액'],
+    ...R.cancelled.map((o) => [o.orderNo, dateTimeStr(o.createdAt), dateTimeStr(o.cancelledAt), itemsText(o.items), o.total]),
+  ];
+  downloadCsv(`라면가게_정산요약_${todayStr()}.csv`, rows);
+}
+
+function exportOrdersCsv() {
+  const rows = [['주문번호', '계산대', '주문 시각', '상태', '메뉴', '단가', '수량', '소계', '주문 총액', '받은 돈', '거스름돈', '준비 완료 시각', '취소 시각']];
+  S.orders.forEach((o) => o.items.forEach((i) => rows.push([
+    o.orderNo, o.register ? `결제 ${o.register}` : '', dateTimeStr(o.createdAt), statusLabel[o.status], i.name, i.price, i.qty, i.price * i.qty,
+    o.total, o.received, o.change, dateTimeStr(o.readyAt), dateTimeStr(o.cancelledAt),
+  ])));
+  downloadCsv(`라면가게_주문상세_${todayStr()}.csv`, rows);
+}
+</script>
+<script>
+/* =====================================================================
+   설정·정산 화면 (Admin)
+   ===================================================================== */
+const Admin = {
+  tab: 'menu',
+  bucketMin: 30,
+  dirty: false,
+
+  render() {
+    if (!allReady()) { $('#app').innerHTML = loadingHtml; return; }
+    const tabs = { menu: '🍜 메뉴·재고', adjust: '📦 보충·폐기', report: '📊 정산', settings: '⚙️ 설정' };
+    $('#app').innerHTML = `
+      <div class="tabs">
+        ${Object.entries(tabs).map(([k, v]) => `<button class="${this.tab === k ? 'on' : ''}" onclick="Admin.go('${k}')">${v}</button>`).join('')}
+      </div>
+      <div id="adminBody">${this[`${this.tab}Html`]()}</div>`;
+  },
+
+  go(tab) { this.tab = tab; this.render(); },
+
+  // 입력 중에는 다시 그리지 않고, 포커스가 빠질 때 반영
+  onData() {
+    const a = document.activeElement;
+    if (a && $('#app').contains(a) && /INPUT|SELECT|TEXTAREA/.test(a.tagName)) { this.dirty = true; return; }
+    this.render();
+  },
+
+  /* ---------------- 메뉴·재고 탭 ---------------- */
+  menuHtml() {
+    const rows = S.menus.map((m, idx) => {
+      const low = (m.stockCurrent ?? 0) <= (m.threshold ?? CONFIG.defaults.threshold);
+      return `
+      <tr>
+        <td style="white-space:nowrap">
+          <button class="btn small ghost" onclick="Admin.move(${idx},-1)" ${idx === 0 ? 'disabled' : ''}>▲</button>
+          <button class="btn small ghost" onclick="Admin.move(${idx},1)" ${idx === S.menus.length - 1 ? 'disabled' : ''}>▼</button>
+        </td>
+        <td><input value="${esc(m.name)}" onchange="Admin.field('${m.id}','name',this.value)"></td>
+        <td><input class="n" type="number" min="0" inputmode="numeric" value="${m.price}" onchange="Admin.field('${m.id}','price',this.value)"></td>
+        <td><input class="n" type="number" min="0" inputmode="numeric" value="${m.stockInitial ?? 0}" onchange="Admin.initial('${m.id}',this.value)"></td>
+        <td class="num" style="font-size:20px;font-weight:900;color:${(m.stockCurrent ?? 0) <= 0 ? 'var(--danger)' : low ? 'var(--warn)' : 'inherit'}">${m.stockCurrent ?? 0}</td>
+        <td><input class="n" type="number" min="0" inputmode="numeric" value="${m.threshold ?? CONFIG.defaults.threshold}" onchange="Admin.field('${m.id}','threshold',this.value)"></td>
+        <td><button class="btn small ${m.visible === false ? 'ghost' : 'ok'}" onclick="Admin.toggleVisible('${m.id}')">${m.visible === false ? '숨김' : '노출'}</button></td>
+        <td><button class="btn small danger" onclick="Admin.del('${m.id}')">삭제</button></td>
+      </tr>`;
+    }).join('');
+
+    return `
+      <div class="admin-grid">
+        <div class="card">
+          <h2>메뉴 추가</h2>
+          <div class="row">
+            <div class="field" style="flex:2"><label>메뉴 이름</label><input id="newName" placeholder="예: 신라면"></div>
+            <div class="field" style="flex:1"><label>가격</label><input id="newPrice" type="number" min="0" inputmode="numeric" placeholder="3000"></div>
+            <div class="field" style="flex:1"><label>초기 수량</label><input id="newStock" type="number" min="0" inputmode="numeric" placeholder="50"></div>
+            <button class="btn primary" onclick="Admin.add()">추가</button>
+          </div>
+        </div>
+        <div class="card scroll-x">
+          <h2>메뉴 목록</h2>
+          <div style="color:var(--muted);margin-bottom:8px;font-size:14px">
+            값을 고치고 칸을 벗어나면 바로 저장됩니다. 초기 수량을 바꾸면 차이만큼 현재 재고도 함께 바뀝니다.
+            추가 구매분은 <b>보충·폐기</b> 탭에서 입력하세요.
+          </div>
+          ${S.menus.length ? `
+          <table class="menu-edit">
+            <thead><tr><th>순서</th><th>이름</th><th>가격</th><th>초기 수량</th><th class="num">현재 재고</th><th>경고 기준</th><th>노출</th><th></th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>` : '<div class="empty">메뉴를 추가하세요</div>'}
+        </div>
+      </div>`;
+  },
+
+  async add() {
+    const name = $('#newName').value.trim();
+    const price = Number($('#newPrice').value);
+    const stock = Number($('#newStock').value || 0);
+    if (!name) { toast('메뉴 이름을 입력하세요'); return; }
+    if (!(price >= 0) || $('#newPrice').value === '') { toast('가격을 입력하세요'); return; }
+    if (!(stock >= 0)) { toast('초기 수량을 확인하세요'); return; }
+    const maxOrder = S.menus.reduce((mx, m) => Math.max(mx, m.order ?? 0), -1);
+    await run(() => DB.addMenu({
+      name, price, order: maxOrder + 1, visible: true,
+      stockInitial: stock, stockCurrent: stock, threshold: Number(S.settings.threshold ?? CONFIG.defaults.threshold),
+    }), `'${name}' 메뉴를 추가했습니다`);
+  },
+
+  async field(id, key, value) {
+    let v = value;
+    if (key === 'name') { v = value.trim(); if (!v) { toast('이름은 비울 수 없습니다'); this.render(); return; } }
+    else { v = Number(value); if (!(v >= 0)) { toast('0 이상의 숫자를 입력하세요'); this.render(); return; } }
+    await run(() => DB.updateMenu(id, { [key]: v }), '저장했습니다');
+  },
+
+  async initial(id, value) {
+    const m = S.menus.find((x) => x.id === id);
+    const v = Number(value);
+    if (!m || !(v >= 0)) { toast('0 이상의 숫자를 입력하세요'); this.render(); return; }
+    const delta = v - (m.stockInitial ?? 0);
+    if (delta) await run(() => DB.changeStockInitial(id, delta), `초기 수량 ${delta > 0 ? '+' : ''}${delta}`);
+  },
+
+  async toggleVisible(id) {
+    const m = S.menus.find((x) => x.id === id);
+    if (m) await run(() => DB.updateMenu(id, { visible: m.visible === false }));
+  },
+
+  async move(idx, dir) {
+    const list = [...S.menus];
+    const j = idx + dir;
+    if (j < 0 || j >= list.length) return;
+    [list[idx], list[j]] = [list[j], list[idx]];
+    // 바뀐 메뉴만 order 필드 갱신
+    await run(async () => {
+      for (let i = 0; i < list.length; i++) if (list[i].order !== i) await DB.updateMenu(list[i].id, { order: i });
+    });
+  },
+
+  async del(id) {
+    const m = S.menus.find((x) => x.id === id);
+    if (!m) return;
+    const ok = await confirmModal({
+      title: '메뉴 삭제', okText: '삭제', okClass: 'danger',
+      msg: `'${esc(m.name)}' 메뉴를 삭제할까요?\n기존 주문 기록은 유지됩니다.\n잠시 팔지 않을 메뉴라면 '숨김'을 사용하세요.`,
+    });
+    if (ok) await run(() => DB.deleteMenu(id), '삭제했습니다');
+  },
+
+  /* ---------------- 보충·폐기 탭 ---------------- */
+  adjustHtml() {
+    const list = [...S.adjustments].reverse();
+    return `
+      <div class="admin-grid">
+        <div class="card">
+          <h2>재고 보충 / 폐기·증정</h2>
+          <div style="color:var(--muted);margin-bottom:12px;font-size:14px">
+            보충은 재고를 늘리고, 폐기·증정은 재고에서만 빼며 <b>매출에는 반영되지 않습니다.</b>
+          </div>
+          <div class="row">
+            <div class="field" style="flex:2"><label>메뉴</label>
+              <select id="adjMenu">${S.menus.map((m) => `<option value="${m.id}">${esc(m.name)} (현재 ${m.stockCurrent ?? 0})</option>`).join('')}</select></div>
+            <div class="field" style="flex:1"><label>구분</label>
+              <select id="adjType"><option value="restock">보충 (+)</option><option value="waste">폐기 (−)</option><option value="gift">증정 (−)</option></select></div>
+            <div class="field" style="flex:1"><label>수량</label><input id="adjQty" type="number" min="1" inputmode="numeric"></div>
+            <div class="field" style="flex:2"><label>메모 (선택)</label><input id="adjMemo" placeholder="예: 조리 실패, 선생님 서비스"></div>
+            <button class="btn primary" onclick="Admin.adjust()" ${S.menus.length ? '' : 'disabled'}>등록</button>
+          </div>
+        </div>
+        <div class="card scroll-x">
+          <h2>조정 이력</h2>
+          ${list.length ? `
+          <table>
+            <thead><tr><th>시각</th><th>메뉴</th><th>구분</th><th class="num">수량</th><th>메모</th></tr></thead>
+            <tbody>${list.map((a) => `
+              <tr><td>${dateTimeStr(a.createdAt)}</td><td>${esc(menuName(a.menuId))}</td>
+              <td>${typeLabel[a.type]}</td><td class="num">${a.type === 'restock' ? '+' : '−'}${a.qty}</td><td>${esc(a.memo)}</td></tr>`).join('')}
+            </tbody>
+          </table>` : '<div style="color:var(--muted)">이력이 없습니다.</div>'}
+        </div>
+      </div>`;
+  },
+
+  async adjust() {
+    const menuId = $('#adjMenu').value;
+    const type = $('#adjType').value;
+    const qty = Math.floor(Number($('#adjQty').value));
+    const memo = $('#adjMemo').value.trim();
+    const m = S.menus.find((x) => x.id === menuId);
+    if (!m) return;
+    if (!(qty > 0)) { toast('수량을 1 이상 입력하세요'); return; }
+    if (type !== 'restock' && qty > (m.stockCurrent ?? 0)) { toast(`현재 재고(${m.stockCurrent})보다 많이 뺄 수 없습니다`); return; }
+    const ok = await confirmModal({
+      title: `${typeLabel[type]} 등록`,
+      msg: `${esc(m.name)} ${type === 'restock' ? '+' : '−'}${qty}개${memo ? `\n메모: ${esc(memo)}` : ''}`,
+      okText: '등록',
+    });
+    if (!ok) return;
+    await run(() => DB.adjust(menuId, type, qty, memo), `${m.name} ${typeLabel[type]} ${qty}개 등록`);
+    const q = $('#adjQty'); if (q) q.value = '';
+    const mm = $('#adjMemo'); if (mm) mm.value = '';
+  },
+
+  /* ---------------- 정산 탭 ---------------- */
+  reportHtml() {
+    const R = computeReport(this.bucketMin);
+    const max = Math.max(1, ...R.buckets.map((b) => b.amount));
+    return `
+      <div class="admin-grid">
+        <div class="row" style="justify-content:flex-end">
+          <button class="btn" onclick="exportOrdersCsv()">⬇ 주문 상세 CSV</button>
+          <button class="btn primary" onclick="exportSummaryCsv(Admin.bucketMin)">⬇ 정산 요약 CSV</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="k">총 매출 (취소 제외)</div><div class="v" style="color:var(--brand)">${money(R.totalSales)}</div></div>
+          <div class="stat"><div class="k">총 주문 건수</div><div class="v">${R.count}건</div></div>
+          <div class="stat"><div class="k">평균 객단가</div><div class="v">${money(R.avg)}</div></div>
+          <div class="stat"><div class="k">취소</div><div class="v">${R.cancelled.length}건</div></div>
+        </div>
+        <div class="card scroll-x">
+          <h2>계산대별 매출 <small style="font-size:14px;color:var(--muted)">(돈통 정산용 · 취소 제외)</small></h2>
+          <table>
+            <thead><tr><th>계산대</th><th>번호 구간</th><th class="num">주문 건수</th><th class="num">매출</th></tr></thead>
+            <tbody>${R.byRegister.map((r) => `<tr><td>결제 ${r.register}</td><td>${rangeText(r.register)} …</td>
+              <td class="num">${r.count}건</td><td class="num">${money(r.amount)}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <div class="card scroll-x">
+          <h2>메뉴별 판매</h2>
+          ${R.menuSales.length ? `<table>
+            <thead><tr><th>메뉴</th><th class="num">판매 수량</th><th class="num">매출</th><th class="num">비중</th></tr></thead>
+            <tbody>${R.menuSales.map((m) => `<tr><td>${esc(m.name)}</td><td class="num">${m.qty}</td><td class="num">${money(m.amount)}</td>
+              <td class="num">${R.totalSales ? Math.round(m.amount / R.totalSales * 100) : 0}%</td></tr>`).join('')}</tbody>
+          </table>` : '<div style="color:var(--muted)">판매 기록이 없습니다.</div>'}
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <h2 style="margin:0">시간대별 매출</h2>
+            <div class="tabs" style="margin:0">
+              <button class="${this.bucketMin === 30 ? 'on' : ''}" onclick="Admin.bucketMin=30;Admin.render()">30분</button>
+              <button class="${this.bucketMin === 60 ? 'on' : ''}" onclick="Admin.bucketMin=60;Admin.render()">1시간</button>
+            </div>
+          </div>
+          ${R.buckets.length ? `<div class="bars">${R.buckets.map((b) => `
+            <div class="bar" title="${timeStr(b.t)} · ${b.count}건 · ${money(b.amount)}">
+              <span class="val">${b.amount ? Number(b.amount).toLocaleString('ko-KR') : ''}</span>
+              <div class="fill" style="height:${(b.amount / max) * 100}%"></div>
+              <span class="t">${timeStr(b.t)}</span>
+            </div>`).join('')}</div>` : '<div style="color:var(--muted);margin-top:12px">판매 기록이 없습니다.</div>'}
+        </div>
+        <div class="card scroll-x">
+          <h2>재고 대사표</h2>
+          <div style="color:var(--muted);font-size:14px;margin-bottom:8px">이론상 잔여 = 초기 + 보충 − 판매 − 폐기·증정. 현재 재고와 다르면 빨간색으로 표시됩니다.</div>
+          <table>
+            <thead><tr><th>메뉴</th><th class="num">초기</th><th class="num">보충</th><th class="num">판매</th><th class="num">폐기·증정</th><th class="num">이론상 잔여</th><th class="num">현재 재고</th></tr></thead>
+            <tbody>${R.recon.map((r) => `<tr style="${r.theory !== r.current ? 'background:#fff5f5;color:var(--danger)' : ''}">
+              <td>${esc(r.name)}</td><td class="num">${r.initial}</td><td class="num">${r.restock}</td><td class="num">${r.sold}</td>
+              <td class="num">${r.waste}</td><td class="num"><b>${r.theory}</b></td><td class="num">${r.current}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <div class="card scroll-x">
+          <h2>취소 내역</h2>
+          ${R.cancelled.length ? `<table>
+            <thead><tr><th>번호</th><th>주문 시각</th><th>취소 시각</th><th>메뉴</th><th class="num">금액</th></tr></thead>
+            <tbody>${R.cancelled.map((o) => `<tr><td>${o.orderNo}</td><td>${timeStr(o.createdAt)}</td><td>${timeStr(o.cancelledAt)}</td>
+              <td>${esc(itemsText(o.items))}</td><td class="num">${money(o.total)}</td></tr>`).join('')}</tbody>
+          </table>` : '<div style="color:var(--muted)">취소 내역이 없습니다.</div>'}
+        </div>
+      </div>`;
+  },
+
+  /* ---------------- 설정 탭 ---------------- */
+  settingsHtml() {
+    const st = S.settings;
+    return `
+      <div class="admin-grid">
+        <div class="card">
+          <h2>결제 화면</h2>
+          <div class="row">
+            <div class="field" style="flex:2"><label>빠른 입력 버튼 금액 (쉼표로 구분)</label>
+              <input value="${esc((st.quickCash || []).join(', '))}" onchange="Admin.saveQuick(this.value)"></div>
+            <div class="field" style="flex:1"><label>새 메뉴 기본 경고 기준 (개)</label>
+              <input type="number" min="0" value="${st.threshold}" onchange="Admin.saveNum('threshold', this.value)"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>조리대 화면</h2>
+          <div class="field" style="max-width:260px"><label>지연 강조 기준 (분)</label>
+            <input type="number" min="1" value="${st.lateMinutes}" onchange="Admin.saveNum('lateMinutes', this.value)"></div>
+        </div>
+        <div class="card">
+          <h2>호출 화면 소리</h2>
+          <div class="row" style="align-items:center">
+            <div class="field" style="flex:1;min-width:200px"><label>음성 속도: <b id="rateVal">${Number(st.ttsRate).toFixed(1)}</b></label>
+              <input type="range" min="0.5" max="2" step="0.1" value="${st.ttsRate}" oninput="$('#rateVal').textContent=Number(this.value).toFixed(1)" onchange="Admin.saveNum('ttsRate', this.value)"></div>
+            <div class="field" style="flex:1;min-width:200px"><label>볼륨: <b id="volVal">${Math.round(st.ttsVolume * 100)}%</b></label>
+              <input type="range" min="0" max="1" step="0.05" value="${st.ttsVolume}" oninput="$('#volVal').textContent=Math.round(this.value*100)+'%'" onchange="Admin.saveNum('ttsVolume', this.value)"></div>
+            <label style="font-size:18px;font-weight:700;display:flex;gap:8px;align-items:center">
+              <input type="checkbox" style="width:26px;height:26px" ${st.chime !== false ? 'checked' : ''} onchange="DB.saveSettings({chime:this.checked})"> 차임음 사용</label>
+            <button class="btn" onclick="Sound.unlock();Sound.announce(7)">🔊 이 기기에서 호출 테스트</button>
+          </div>
+          <div style="color:var(--muted);font-size:14px;margin-top:8px">설정은 모든 기기에 공유됩니다. 호출 화면 기기의 시스템 볼륨도 확인하세요.</div>
+        </div>
+        <div class="card">
+          <h2>이 기기</h2>
+          <div style="margin-bottom:12px">데이터 모드: <b>${DB.mode === 'firebase' ? 'Firebase 실시간 동기화' : '로컬 모드 (이 기기 안에서만 저장 · 연습용)'}</b>
+            ${DB.path ? `<br>저장 위치: <code>${esc(DB.path)}</code>` : ''}</div>
+          <button class="btn" onclick="changeRole()">기기 역할 다시 선택</button>
+        </div>
+        <div class="card" style="border-color:#ffc9c9">
+          <h2 style="color:var(--danger)">데이터 초기화</h2>
+          <div style="margin-bottom:12px">리허설 후 실제 운영 전에 사용하세요. <b>모든 주문·취소·보충·폐기 기록과 주문번호가 삭제</b>되고,
+            재고는 초기 수량으로 되돌아갑니다. (메뉴와 설정은 유지)</div>
+          <button class="btn danger" onclick="Admin.reset()">데이터 초기화…</button>
+        </div>
+      </div>`;
+  },
+
+  async saveNum(key, value) {
+    const v = Number(value);
+    if (!(v >= 0)) { toast('숫자를 확인하세요'); return; }
+    await run(() => DB.saveSettings({ [key]: v }), '저장했습니다');
+  },
+
+  async saveQuick(value) {
+    const list = value.split(/[,\s]+/).map(Number).filter((n) => n > 0).slice(0, 3);
+    if (!list.length) { toast('금액을 1개 이상 입력하세요'); this.render(); return; }
+    await run(() => DB.saveSettings({ quickCash: list }), '저장했습니다 (최대 3개)');
+  },
+
+  // 확인 2단계: 1) 경고 확인 → 2) '초기화' 직접 입력
+  async reset() {
+    const ok1 = await confirmModal({
+      title: '⚠️ 데이터 초기화 (1/2)', okText: '다음', okClass: 'danger',
+      msg: `이 앱(${esc(DB.path || '로컬')})의 주문 ${S.orders.length}건, 재고 조정 ${S.adjustments.length}건이 모두 삭제됩니다.
+(같은 Firebase 프로젝트의 다른 앱 데이터는 건드리지 않습니다.)\n되돌릴 수 없습니다. 필요하면 먼저 정산 탭에서 CSV를 내려받으세요.`,
+    });
+    if (!ok1) return;
+    const ok2 = await new Promise((resolve) => {
+      const m = openModal(`
+        <h2>⚠️ 데이터 초기화 (2/2)</h2>
+        <div class="msg">계속하려면 아래 칸에 <b>초기화</b> 라고 입력하세요.</div>
+        <div class="field"><input id="resetConfirm" autocomplete="off"></div>
+        <div class="actions"><button class="btn ghost" data-r="0">취소</button><button class="btn danger" data-r="1">초기화 실행</button></div>`);
+      m.querySelectorAll('[data-r]').forEach((b) => b.onclick = () => {
+        const v = m.querySelector('#resetConfirm').value.trim();
+        if (b.dataset.r === '1' && v !== '초기화') { toast("'초기화'를 정확히 입력하세요"); return; }
+        m.remove(); resolve(b.dataset.r === '1');
+      });
+    });
+    if (ok2) await run(() => DB.resetAll(), '데이터를 초기화했습니다');
+  },
+};
+VIEWS.admin = Admin;
+
+document.addEventListener('focusout', () => {
+  setTimeout(() => {
+    const a = document.activeElement;
+    if (Admin.dirty && role === 'admin' && !(a && /INPUT|SELECT|TEXTAREA/.test(a.tagName))) {
+      Admin.dirty = false; Admin.render();
+    }
+  }, 50);
+});
+
+/* =====================================================================
+   시작
+   ===================================================================== */
+(async function init() {
+  renderApp();
+  const fb = CONFIG.firebase;
+  try {
+    DB = fb.apiKey && fb.projectId ? await createFirestoreBackend() : createLocalBackend();
+  } catch (e) {
+    console.error(e);
+    $('#app').innerHTML = `<div class="empty">Firebase 연결에 실패했습니다.<br><small>${esc(e.message)}</small><br><br>
+      <button class="btn primary" onclick="location.reload()">다시 시도</button></div>`;
+    return;
+  }
+  setNetState('on');
+  DB.start();
+  renderApp();
+})();
+</script>
+</body>
+</html>
