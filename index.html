@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>슈의 라면 가게 POS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<script>
+  // 저장된 테마를 화면이 그려지기 전에 먼저 적용 (깜빡임 방지)
+  try { if (localStorage.getItem('ramen-pos-theme') === 'cup') document.documentElement.classList.add('theme-cup'); } catch {}
+</script>
 <style>
   :root {
     --bg: #fff8ef;
@@ -267,6 +271,173 @@
   .toast { position: fixed; left: 50%; bottom: 60px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 14px 20px; border-radius: 14px; font-size: 18px; font-weight: 700; display: flex; gap: 14px; align-items: center; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
   .toast button { background: #ffd43b; color: var(--ink); padding: 10px 16px; border-radius: 10px; font-weight: 900; font-size: 18px; }
   .hidden { display: none !important; }
+
+  /* 테마 선택 카드 (설정 탭) */
+  .topbar .role-tag, .topbar button { white-space: nowrap; }
+  .theme-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .theme-pick button { text-align: left; padding: 14px; border-radius: 14px; background: #fff; border: 3px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+  .theme-pick button.on { border-color: var(--ink); box-shadow: 0 0 0 3px var(--brand); }
+  .theme-pick .sw { display: flex; gap: 6px; }
+  .theme-pick .sw i { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(0,0,0,.2); }
+  .theme-pick b { font-size: 19px; }
+  .theme-pick small { color: var(--muted); font-size: 14px; }
+</style>
+
+<style id="theme-cup-pop">
+/* =====================================================================
+   THEME — 컵라면 팝 (굵은 외곽선 · 원색 · 스티커 그림자)
+   <html class="theme-cup"> 일 때만 적용된다. 설정·정산 > 설정 > 화면 테마에서 전환.
+   ===================================================================== */
+  html.theme-cup {
+    --bg: #fff1e0; --panel: #ffffff; --ink: #111111; --muted: #555555; --line: #111111;
+    --brand: #ff3d2e; --brand-dark: #d92a1c; --ok: #1fbf5f; --warn: #ff9f1a; --danger: #ff3d2e; --info: #2f6bff;
+    --yellow: #ffd23f; --orange: #ff8a5c; --sky: #7fd8ff; --lime: #b8f27c;
+    --head: 'Black Han Sans', 'Noto Sans KR', sans-serif;
+    --radius: 14px; --shadow: 5px 5px 0 #111; --shadow-s: 3px 3px 0 #111;
+  }
+  .theme-cup h1, .theme-cup h2, .theme-cup h3, .theme-cup .k-section { font-family: var(--head); font-weight: 400; }
+  .theme-cup h2 { font-size: 25px; } .theme-cup h3 { font-size: 20px; }
+
+  /* 상단 바 */
+  .theme-cup .topbar { background: var(--brand); border-bottom: 4px solid #111; padding: 12px 18px; }
+  .theme-cup .topbar h1 { font-size: 30px; color: #fff; -webkit-text-stroke: 1px #111; text-shadow: 3px 3px 0 #111; }
+  .theme-cup .topbar .role-tag { background: var(--yellow); color: #111; border: 3px solid #111; font-weight: 900; }
+  .theme-cup .topbar .net { border: 3px solid #111; background: var(--ok); color: #111; font-weight: 700; }
+  .theme-cup .topbar .net.off { background: #fff; color: var(--danger); }
+  .theme-cup .topbar .net.local { background: #b197fc; color: #111; }
+  .theme-cup .topbar button { background: #fff; color: #111; border: 3px solid #111; box-shadow: var(--shadow-s); }
+  .theme-cup .topbar button:active { transform: translate(3px,3px); box-shadow: none; }
+
+  /* 공통 버튼 · 카드 */
+  .theme-cup .btn { border: 3px solid #111; box-shadow: var(--shadow-s); background: #fff; color: #111; }
+  .theme-cup .btn:active:not(:disabled) { transform: translate(3px,3px); box-shadow: none; }
+  .theme-cup .btn.primary { background: var(--brand); color: #fff; }
+  .theme-cup .btn.ok { background: var(--ok); color: #111; }
+  .theme-cup .btn.danger { background: var(--danger); color: #fff; }
+  .theme-cup .btn.blue { background: var(--sky); color: #111; }
+  .theme-cup .btn.ghost { background: #fff; border: 3px solid #111; }
+  .theme-cup .btn.small { box-shadow: 2px 2px 0 #111; border-width: 2px; }
+  .theme-cup .card { border: 3px solid #111; box-shadow: var(--shadow); }
+  .theme-cup .theme-pick button { border-color: #111; }
+
+  /* 역할 선택 */
+  .theme-cup .role-grid button { border: 3px solid #111; box-shadow: var(--shadow); font-family: var(--head); font-weight: 400; font-size: 30px; }
+  .theme-cup .role-grid button:nth-child(4n+1) { background: var(--yellow); }
+  .theme-cup .role-grid button:nth-child(4n+2) { background: var(--orange); }
+  .theme-cup .role-grid button:nth-child(4n+3) { background: var(--sky); }
+  .theme-cup .role-grid button:nth-child(4n+4) { background: var(--lime); }
+  .theme-cup .role-grid button small { color: #111; opacity: .75; font-family: 'Noto Sans KR', sans-serif; }
+  .theme-cup .role-grid button:active { border-color: #111; transform: translate(4px,4px); box-shadow: 1px 1px 0 #111; }
+
+  /* 결제: 메뉴 타일 */
+  .theme-cup .tile { border: 3px solid #111; box-shadow: var(--shadow); }
+  .theme-cup .menu-grid .tile:nth-child(4n+1) { background: var(--yellow); }
+  .theme-cup .menu-grid .tile:nth-child(4n+2) { background: var(--orange); }
+  .theme-cup .menu-grid .tile:nth-child(4n+3) { background: var(--sky); }
+  .theme-cup .menu-grid .tile:nth-child(4n+4) { background: var(--lime); }
+  .theme-cup .tile:active:not(:disabled) { transform: translate(4px,4px); box-shadow: 1px 1px 0 #111; border-color: #111; }
+  .theme-cup .tile .name { font-family: var(--head); font-weight: 400; font-size: 25px; }
+  .theme-cup .tile .price { color: #111; font-family: var(--head); font-size: 21px; }
+  .theme-cup .tile .stock { color: #111; opacity: .7; }
+  .theme-cup .tile .qty-badge { background: #111; color: var(--yellow); border: 3px solid #fff; font-family: var(--head); font-weight: 400; transform: rotate(8deg); z-index: 1; }
+  .theme-cup .tile .low-badge { background: #111; color: var(--yellow); }
+  .theme-cup .tile.soldout { background: #ddd !important; }
+  .theme-cup .tile.soldout::after { border-radius: 11px; background: repeating-linear-gradient(-45deg, rgba(17,17,17,.82) 0 14px, rgba(17,17,17,.7) 14px 28px); font-family: var(--head); font-weight: 400; font-size: 28px; content: '다 팔렸어요'; letter-spacing: 0; }
+
+  /* 결제: 장바구니 · 금액 */
+  .theme-cup .cart-row, .theme-cup .recent-row { border-bottom: 2px solid #111; }
+  .theme-cup .cart-row .del { border: 2px solid #111; background: #fff; color: #111; }
+  .theme-cup .total-line .big { font-family: var(--head); font-weight: 400; color: var(--brand); -webkit-text-stroke: 1px #111; }
+  .theme-cup .received { font-family: var(--head); font-weight: 400; }
+  .theme-cup .quick button { background: var(--yellow); border: 2px solid #111; font-weight: 900; }
+  .theme-cup .quick button[onclick*="exact"] { background: var(--sky) !important; border-color: #111 !important; }
+  .theme-cup .quick button:active { transform: translate(2px,2px); }
+  .theme-cup .keypad button { background: #fff; border: 2px solid #111; box-shadow: var(--shadow-s); font-family: var(--head); font-weight: 400; }
+  .theme-cup .keypad button:active { background: var(--yellow); transform: translate(3px,3px); box-shadow: none; }
+  .theme-cup .change-box { border: 3px solid #111; background: var(--lime); box-shadow: var(--shadow); }
+  .theme-cup .change-box .amt { color: #111; font-family: var(--head); font-weight: 400; }
+  .theme-cup .change-box.short { background: #ffd9d4; border-color: #111; }
+  .theme-cup .change-box.short .amt { color: var(--danger); }
+  .theme-cup .pay-btn { font-family: var(--head); font-weight: 400; font-size: 32px; background: var(--ok); color: #111; border: 3px solid #111; box-shadow: 6px 6px 0 #111; }
+  .theme-cup .pay-btn:active:not(:disabled) { transform: translate(5px,5px); box-shadow: 1px 1px 0 #111; }
+  .theme-cup .recent-row .no { font-family: var(--head); font-weight: 400; }
+
+  /* 상태 라벨 · 메모 */
+  .theme-cup .status { color: #111; border: 2px solid #111; }
+  .theme-cup .status.waiting { background: var(--warn); }
+  .theme-cup .status.ready { background: var(--ok); }
+  .theme-cup .status.picked { background: var(--sky); }
+  .theme-cup .status.cancelled { background: #ced4da; }
+  .theme-cup .memo { border: 2px solid #111; background: var(--yellow); color: #111; }
+
+  /* 조리대 */
+  .theme-cup .summary-bar .chip { border: 3px solid #111; box-shadow: var(--shadow-s); }
+  .theme-cup .summary-bar .chip:first-child { background: var(--brand); color: #fff; }
+  .theme-cup .summary-bar .chip:last-child { background: var(--sky); }
+  .theme-cup .k-card { border: 3px solid #111; box-shadow: var(--shadow); }
+  .theme-cup .k-card .no { font-family: var(--head); font-weight: 400; }
+  .theme-cup .k-card.late { background: #ffd9d4; border-color: #111; animation: none; box-shadow: 5px 5px 0 var(--danger); }
+  .theme-cup .k-card.late .no { color: var(--danger); -webkit-text-stroke: 1px #111; }
+  .theme-cup .k-card .ready-btn { font-family: var(--head); font-weight: 400; font-size: 25px; color: #111; border: 3px solid #111; }
+  .theme-cup .k-card .ready-btn:active { transform: translate(3px,3px); }
+  .theme-cup .k-card .ready-btn.pick { background: var(--sky); }
+  .theme-cup .k-section { font-size: 26px; }
+
+  /* 호출 모니터 */
+  .theme-cup body.display-mode { background: var(--yellow); color: #111; }
+  .theme-cup .display { position: relative; }
+  .theme-cup .display::before { content: ''; position: fixed; inset: 0; z-index: -1; background: repeating-conic-gradient(from 0deg at 50% 42%, #ffd23f 0 10deg, #ffc21a 10deg 20deg); }
+  .theme-cup .display .title { font-family: var(--head); font-weight: 400; color: #fff; -webkit-text-stroke: 2px #111; text-shadow: .5vh .5vh 0 #111; }
+  .theme-cup .display .label { color: #111; font-weight: 700; }
+  .theme-cup .display .current { font-family: var(--head); font-weight: 400; color: var(--brand); -webkit-text-stroke: .6vh #111; text-shadow: 1.2vh 1.2vh 0 #111; }
+  .theme-cup .display .current.flash { animation-name: flashCup; }
+  @keyframes flashCup { 0%,100% { transform: scale(1); color: #ff3d2e; } 50% { transform: scale(1.18) rotate(-3deg); color: #fff; } }
+  .theme-cup .display .msg { font-family: var(--head); font-weight: 400; background: #fff; border: 3px solid #111; padding: .3vh 2.4vh; border-radius: 999px; box-shadow: .5vh .5vh 0 #111; }
+  .theme-cup .display .board { background: #fff; border: 4px solid #111; box-shadow: .8vh .8vh 0 #111; }
+  .theme-cup .display .board h3 { font-family: var(--head); font-weight: 400; color: #111 !important; }
+  .theme-cup .display .board h3 small { color: #555; }
+  .theme-cup .display .chip { font-family: var(--head); font-weight: 400; color: #111; border: 3px solid #111 !important; background: #fff; }
+  .theme-cup .display .cooking .chip { background: #ffd9b3; }
+  .theme-cup .display .done .chip { background: #d3f9d8; color: #111; }
+  .theme-cup .display .done .chip.now { background: var(--ok); color: #111; }
+  .theme-cup .display .chip.more { color: #555; border-style: dashed !important; }
+  .theme-cup .display .board .none { color: #777; }
+  .theme-cup .display .foot { color: #111; opacity: .6; }
+  .theme-cup .start-overlay { background: rgba(17,17,17,.88); font-family: var(--head); font-weight: 400; }
+  .theme-cup .display-exit { color: rgba(0,0,0,.25); }
+
+  /* 매니저 */
+  .theme-cup .tabs button, .theme-cup .seg button { border: 3px solid #111; background: #fff; box-shadow: var(--shadow-s); }
+  .theme-cup .tabs button.on, .theme-cup .seg button.on { background: #111; color: var(--yellow); }
+  .theme-cup .mgr-count { border: 3px solid #111; box-shadow: var(--shadow-s); }
+  .theme-cup .mgr-count b { font-family: var(--head); font-weight: 400; }
+  .theme-cup .mgr-count.waiting { background: #ffd9b3; border-color: #111; }
+  .theme-cup .mgr-count.ready { background: var(--sky); border-color: #111; }
+  .theme-cup .mgr-count.picked { background: var(--lime); border-color: #111; }
+  .theme-cup .mgr-count.cancelled { background: #e9ecef; border-color: #111; }
+  .theme-cup .alert { border: 2px solid #111; }
+  .theme-cup .mgr-col { background: #fff; border: 3px solid #111; }
+  .theme-cup .mgr-col h3 { font-size: 21px; }
+  .theme-cup .m-card { border: 3px solid #111; box-shadow: var(--shadow-s); }
+  .theme-cup .m-card.late { border-color: #111; background: #ffd9d4; box-shadow: 3px 3px 0 var(--danger); }
+  .theme-cup .m-no, .theme-cup .d-no { font-family: var(--head); font-weight: 400; }
+  .theme-cup .m-reg { background: var(--yellow); border: 1px solid #111; color: #111; }
+  .theme-cup .mgr-controls input { border: 3px solid #111; }
+
+  /* 설정·정산 */
+  .theme-cup th { background: var(--yellow); border-bottom: 3px solid #111; }
+  .theme-cup td { border-bottom: 1px solid #111; }
+  .theme-cup .field input, .theme-cup .field select, .theme-cup .menu-edit td input { border: 2px solid #111; }
+  .theme-cup .stat { border: 3px solid #111; box-shadow: var(--shadow); }
+  .theme-cup .stat .v { font-family: var(--head); font-weight: 400; }
+  .theme-cup .bar .fill { background: var(--brand); border: 2px solid #111; border-bottom: 0; }
+
+  /* 모달 · 토스트 */
+  .theme-cup .modal { border: 4px solid #111; box-shadow: 8px 8px 0 #111; }
+  .theme-cup .modal .qty-display { border: 3px solid #111; font-family: var(--head); font-weight: 400; }
+  .theme-cup .done-no { font-family: var(--head); font-weight: 400; color: var(--brand); -webkit-text-stroke: 3px #111; text-shadow: 6px 6px 0 #111; }
+  .theme-cup .toast { border: 3px solid #fff; box-shadow: 5px 5px 0 var(--brand); }
+  .theme-cup .toast button { background: var(--yellow); border: 2px solid #111; }
 </style>
 </head>
 <body>
@@ -320,6 +491,7 @@ const CONFIG = {
     lateMinutes: 5,                        // 조리 지연 강조 기준 (분)
     pickupLateMinutes: 3,                  // 미수령 강조 기준 (조리 완료 후, 분)
     threshold: 10,                         // 재고 부족 경고 기본 임계값
+    theme: 'original',                     // 화면 테마: 'original' | 'cup' (설정 탭에서 변경, 모든 기기 공유)
   },
   undoSeconds: 6,                          // "준비 완료" 되돌리기 가능 시간 (초)
   longPressMs: 550,                        // 메뉴 타일 길게 누르기 판정 시간
@@ -366,6 +538,17 @@ const itemsText = (items) => items.map((i) => `${i.name}×${i.qty}`).join(', ');
 /* =====================================================================
    앱 상태 (DB 구독 결과가 여기에 들어온다)
    ===================================================================== */
+/* ---------- 화면 테마 ---------- */
+const THEMES = {
+  original: { label: '오리지널', desc: '따뜻한 크림 바탕의 기본 디자인', sw: ['#fff8ef', '#d9480f', '#1d1a17', '#2b8a3e'] },
+  cup:      { label: '컵라면 팝', desc: '굵은 외곽선 · 원색 · 스티커 그림자', sw: ['#ffd23f', '#ff3d2e', '#7fd8ff', '#111111'] },
+};
+function applyTheme(t) {
+  const key = THEMES[t] ? t : 'original';
+  document.documentElement.classList.toggle('theme-cup', key === 'cup');
+  try { localStorage.setItem('ramen-pos-theme', key); } catch {}
+}
+
 const S = {
   menus: [],        // order 순 정렬
   orders: [],       // createdAt 순 정렬
@@ -377,6 +560,7 @@ const S = {
 function setCollection(name, list) {
   if (name === 'settings') {
     S.settings = { ...CONFIG.defaults, ...(list || {}) };
+    applyTheme(S.settings.theme);
   } else {
     const sortKey = name === 'menus' ? 'order' : 'createdAt';
     S[name] = list.sort((a, b) => (a[sortKey] ?? 0) - (b[sortKey] ?? 0));
@@ -1939,6 +2123,18 @@ const Admin = {
     return `
       <div class="admin-grid">
         <div class="card">
+          <h2>화면 테마</h2>
+          <div class="theme-pick">
+            ${Object.entries(THEMES).map(([k, t]) => `
+              <button class="${(st.theme || 'original') === k ? 'on' : ''}" onclick="Admin.setTheme('${k}')">
+                <span class="sw">${t.sw.map((c) => `<i style="background:${c}"></i>`).join('')}</span>
+                <b>${t.label}${(st.theme || 'original') === k ? ' ✓' : ''}</b>
+                <small>${t.desc}</small>
+              </button>`).join('')}
+          </div>
+          <div style="color:var(--muted);font-size:14px;margin-top:8px">테마는 모든 기기(결제·조리대·호출·매니저)에 바로 적용됩니다.</div>
+        </div>
+        <div class="card">
           <h2>결제 화면</h2>
           <div class="row">
             <div class="field" style="flex:2"><label>빠른 입력 버튼 금액 (쉼표로 구분)</label>
@@ -1988,6 +2184,12 @@ const Admin = {
     const v = Number(value);
     if (!(v >= 0)) { toast('숫자를 확인하세요'); return; }
     await run(() => DB.saveSettings({ [key]: v }), '저장했습니다');
+  },
+
+  async setTheme(key) {
+    if (!THEMES[key]) return;
+    applyTheme(key);
+    await run(() => DB.saveSettings({ theme: key }), `'${THEMES[key].label}' 테마로 바꿨습니다`);
   },
 
   async saveQuick(value) {
