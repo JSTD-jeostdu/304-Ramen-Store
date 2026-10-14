@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>슈의 라면 가게 POS</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="preload" as="image" href="img/sue-face.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
 <script>
   // 저장된 테마를 화면이 그려지기 전에 먼저 적용 (깜빡임 방지)
-  try { if (localStorage.getItem('ramen-pos-theme') === 'cup') document.documentElement.classList.add('theme-cup'); } catch {}
+  try { const t = localStorage.getItem('ramen-pos-theme'); if (t === 'cup' || t === 'pink') document.documentElement.classList.add('theme-' + t); } catch {}
 </script>
 <style>
   :root {
@@ -50,7 +52,7 @@
   .topbar .net.local { background: #5f3dc4; }
   .topbar button { background: #444; color: #fff; padding: 8px 14px; border-radius: 10px; font-weight: 700; }
 
-  main { flex: 1; padding: 16px; min-height: 0; }
+  main { flex: 1 0 auto; padding: 16px; min-height: 0; }
   footer { text-align: center; padding: 8px; color: var(--muted); font-size: 13px; }
 
   .btn { padding: 14px 20px; border-radius: 12px; font-weight: 700; font-size: 18px; background: #e9e2d8; color: var(--ink); }
@@ -281,6 +283,179 @@
   .theme-pick .sw i { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(0,0,0,.2); }
   .theme-pick b { font-size: 19px; }
   .theme-pick small { color: var(--muted); font-size: 14px; }
+
+  /* =====================================================================
+     캐릭터 장식 (슈 · 정우쌤) — 모든 테마 공통. 이미지는 img/ 폴더에 함께 배포
+     ===================================================================== */
+  .topbar h1 { display: flex; align-items: center; gap: 8px; }
+  .topbar h1 .logo { width: 40px; height: 40px; border-radius: 50%; background: #ffdeeb; border: 2px solid #fff; object-fit: cover; flex: none; }
+  footer.app-foot { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  footer.app-foot img { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 1px solid var(--line); image-rendering: pixelated; }
+  .bubble { position: relative; display: inline-block; background: #fff; color: var(--ink); border: 3px solid var(--brand); border-radius: 18px; padding: 8px 14px; font-weight: 900; font-size: 17px; line-height: 1.35; }
+  .bubble::after { content: ''; position: absolute; left: -11px; top: 50%; margin-top: -8px; border: 8px solid transparent; border-right-color: var(--brand); border-left: 0; }
+  .bubble.down::after { left: 50%; top: auto; bottom: -11px; margin: 0 0 0 -8px; border: 8px solid transparent; border-top-color: var(--brand); border-bottom: 0; }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes hop { 0%,100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-14px) rotate(-4deg); } 60% { transform: translateY(0) rotate(3deg); } }
+  @media (prefers-reduced-motion: reduce) { .bob, .hop { animation: none !important; } }
+  .bob { animation: bob 2.6s ease-in-out infinite; }
+  .hop { animation: hop .9s ease-in-out 2; }
+
+  /* 역할 선택: 가게 간판 */
+  .hero { position: relative; max-width: 1000px; margin: 12px auto 0; display: grid; grid-template-columns: 200px 1fr 150px; align-items: end; gap: 12px;
+    background: linear-gradient(180deg, #fff 0%, #fff4f8 100%); border: 3px solid #fcc2d7; border-radius: 24px; padding: 18px 20px 0; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 16px;
+    background: repeating-linear-gradient(90deg, #f783ac 0 28px, #fff 28px 56px); border-bottom: 3px solid #fcc2d7; }
+  .hero img { display: block; width: 100%; height: auto; }
+  .hero .duo { max-height: 300px; object-fit: contain; object-position: bottom; }
+  .hero .sue { max-height: 250px; object-fit: contain; object-position: bottom; }
+  .hero .mid { text-align: center; padding: 18px 0 22px; align-self: center; }
+  .hero .mid .class { display: inline-block; background: #e64980; color: #fff; font-weight: 900; border-radius: 999px; padding: 4px 14px; font-size: 16px; }
+  .hero .mid h2 { font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-weight: 400; font-size: 52px; margin: 8px 0 6px; color: #e64980; text-shadow: 3px 3px 0 #ffdeeb; line-height: 1.1; }
+  .hero .mid h2 span { color: var(--ink); }
+  .hero .mid .bubble { margin-top: 8px; border-color: #f783ac; }
+  .hero .mid .bubble::after { border-top-color: #f783ac; }
+  .hero .pick { margin-top: 14px; color: var(--muted); font-size: 15px; }
+  .hero .pick b { color: var(--ink); font-size: 20px; display: block; margin-bottom: 2px; }
+  @media (max-width: 760px) { .hero { grid-template-columns: 110px 1fr; } .hero .sue { display: none; } .hero .mid h2 { font-size: 34px; } .hero > div:last-child { display: none; } }
+  .role-grid { margin-top: 20px; }
+  .role-grid button .ri { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #ffdeeb; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--line); image-rendering: pixelated; }
+
+  /* 결제: 빈 장바구니 · 주문 완료 */
+  .cart-hint { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+  .cart-hint img { width: 66px; height: auto; flex: none; }
+  .cart-hint .bubble { font-size: 15px; font-weight: 700; }
+  .done-wrap { display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .done-wrap img { width: 120px; height: auto; }
+  .done-wrap .done-no { margin: 0; }
+  .done-thanks { text-align: center; margin: 6px 0 4px; }
+
+  /* 조리대: 주문 대기 */
+  .k-idle { display: flex; align-items: center; justify-content: center; gap: 22px; padding: 26px 0; flex-wrap: wrap; }
+  .k-idle img { width: 210px; height: 210px; border-radius: 26px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 0 0 3px var(--line), 0 10px 22px rgba(0,0,0,.12); }
+  .k-idle .t { font-size: 26px; font-weight: 900; }
+  .k-idle .s { color: var(--muted); font-size: 17px; margin-top: 6px; }
+
+  /* 호출 모니터: 좌우 캐릭터 */
+  .display .mascot { position: absolute; top: 9vh; height: 52vh; width: auto; pointer-events: none; z-index: 0; filter: drop-shadow(0 1vh 1.6vh rgba(0,0,0,.35)); }
+  .display .mascot.l { left: 2.5vw; }
+  .display .mascot.r { right: 3vw; height: 44vh; top: 20vh; }
+  .display .mascot.r.calling { animation: hop .9s ease-in-out 3; }
+  .display .say { position: absolute; right: calc(3vw + 14vh); top: 12.5vh; z-index: 1; font-size: 2.6vh; padding: 1vh 1.6vh; border-width: .4vh; }
+  .display .say::after { left: auto; right: 3vh; top: auto; bottom: -1.4vh; margin: 0; border: 1vh solid transparent; border-top-color: var(--brand); border-bottom: 0; }
+  .display { position: relative; }
+  .display > .title, .display > .label, .display > .current, .display > .msg { position: relative; z-index: 1; }
+  .display .current .idle-img { height: 24vh; width: auto; vertical-align: top; }
+  .display .boards { position: relative; z-index: 1; }
+  @media (max-aspect-ratio: 5/4) { .display .mascot, .display .say { display: none; } }
+  .start-overlay img { height: 34vh; width: auto; }
+
+  /* 설정: 가게 소개 · 포스터 */
+  .about { display: grid; grid-template-columns: 170px 1fr; gap: 18px; align-items: center; }
+  .about .poster { width: 170px; border-radius: 14px; border: 3px solid #fcc2d7; display: block; }
+  .about .people { display: flex; align-items: flex-end; gap: 8px; margin-top: 10px; }
+  .about .people img { height: 120px; width: auto; }
+  @media (max-width: 640px) { .about { grid-template-columns: 1fr; } }
+
+  /* 컵라면 팝 테마에서 캐릭터는 스티커처럼 */
+  .theme-cup .hero { border: 4px solid #111; box-shadow: 6px 6px 0 #111; background: #fff; }
+  .theme-cup .hero::before { background: repeating-linear-gradient(90deg, #ff3d2e 0 28px, #fff 28px 56px); border-bottom: 4px solid #111; }
+  .theme-cup .hero .mid h2 { color: var(--brand); -webkit-text-stroke: 1.5px #111; text-shadow: 4px 4px 0 #111; }
+  .theme-cup .hero .mid .class { background: #111; color: var(--yellow); }
+  .theme-cup .bubble, .theme-cup .hero .mid .bubble { border-color: #111; box-shadow: 3px 3px 0 #111; }
+  .theme-cup .bubble::after, .theme-cup .hero .mid .bubble::after { border-right-color: #111; border-top-color: #111; }
+  .theme-cup .hero img, .theme-cup .cart-hint img, .theme-cup .done-wrap img, .theme-cup .about .people img { filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(3px 3px 0 #111); }
+  .theme-cup .k-idle img { border: 4px solid #111; box-shadow: 6px 6px 0 #111; }
+  .theme-cup .role-grid button .ri { border: 3px solid #111; box-shadow: 2px 2px 0 #111; }
+  .theme-cup .topbar h1 .logo { border: 3px solid #111; }
+  .theme-cup .about .poster { border: 3px solid #111; box-shadow: 4px 4px 0 #111; }
+  .theme-cup .display .mascot { filter: drop-shadow(.4vh 0 0 #fff) drop-shadow(-.4vh 0 0 #fff) drop-shadow(0 .4vh 0 #fff) drop-shadow(0 -.4vh 0 #fff) drop-shadow(1vh 1vh 0 #111); }
+  .theme-cup .display .say { border-color: #111; }
+  .theme-cup .display .say::after { border-top-color: #111; }
+</style>
+
+<style id="theme-sue-pink">
+/* =====================================================================
+   THEME — 슈 핑크 (포스터 디자인: 줄무늬 차양 · 하트 · 핑크 파스텔)
+   <html class="theme-pink"> 일 때만 적용된다.
+   ===================================================================== */
+  html.theme-pink {
+    --bg: #fff0f6; --panel: #ffffff; --ink: #4a1d34; --muted: #9c6b84; --line: #fcc2d7;
+    --brand: #e64980; --brand-dark: #c2255c; --ok: #20a35a; --warn: #f59f00; --danger: #e03131; --info: #7048e8;
+    --head: 'Black Han Sans', 'Noto Sans KR', sans-serif; --radius: 20px;
+  }
+  .theme-pink body {
+    background-color: var(--bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M16 22c-3-5-11-3-9 3 1 3 9 9 9 9s8-6 9-9c2-6-6-8-9-3z' fill='%23ffdeeb'/%3E%3Cpath d='M48 50c-2-3-7-2-6 2 1 2 6 6 6 6s5-4 6-6c1-4-4-5-6-2z' fill='%23ffe3ef'/%3E%3C/svg%3E");
+  }
+  .theme-pink h1, .theme-pink h2, .theme-pink .k-section { font-family: var(--head); font-weight: 400; }
+  .theme-pink h2 { font-size: 24px; color: var(--brand-dark); }
+  .theme-pink .topbar { background: linear-gradient(180deg, #f783ac, #e64980); position: relative; padding-bottom: 18px; }
+  .theme-pink .topbar::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 10px;
+    background: radial-gradient(circle at 14px 0, #e64980 13px, transparent 14px) 0 0 / 28px 10px repeat-x, #fff0f6; }
+  .theme-pink .topbar h1 { font-size: 26px; text-shadow: 2px 2px 0 #c2255c; }
+  .theme-pink .topbar .role-tag { background: #fff; color: var(--brand-dark); }
+  .theme-pink .topbar button { background: rgba(255,255,255,.25); border: 2px solid #fff; }
+  .theme-pink .topbar .net { background: #fff; color: var(--ok); }
+  .theme-pink .topbar .net.off { color: var(--danger); }
+  .theme-pink .topbar .net.local { color: var(--info); }
+  .theme-pink .card, .theme-pink .stat { border-radius: 22px; box-shadow: 0 6px 18px rgba(230,73,128,.10); }
+  .theme-pink .btn { background: #ffe3ef; color: var(--ink); border-radius: 999px; }
+  .theme-pink .btn.primary { background: var(--brand); color: #fff; }
+  .theme-pink .btn.ok { background: var(--ok); color: #fff; }
+  .theme-pink .btn.danger { background: var(--danger); color: #fff; }
+  .theme-pink .btn.blue { background: var(--info); color: #fff; }
+  .theme-pink .btn.ghost { background: #fff; border-color: var(--line); }
+  .theme-pink .role-grid button { border-radius: 26px; box-shadow: 0 6px 0 #fcc2d7; }
+  .theme-pink .role-grid button:active { transform: translateY(4px); box-shadow: 0 2px 0 #fcc2d7; }
+  .theme-pink .tile { border-radius: 24px; border-color: var(--line); box-shadow: 0 5px 0 #fcc2d7; }
+  .theme-pink .menu-grid .tile:nth-child(3n+1) { background: #fff; }
+  .theme-pink .menu-grid .tile:nth-child(3n+2) { background: #fff5f9; }
+  .theme-pink .menu-grid .tile:nth-child(3n+3) { background: #fffaf0; }
+  .theme-pink .tile:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #fcc2d7; border-color: var(--brand); }
+  .theme-pink .tile .name { font-family: var(--head); font-weight: 400; font-size: 25px; }
+  .theme-pink .tile .price { color: #fff; background: var(--brand); border-radius: 999px; padding: 1px 12px; font-weight: 900; }
+  .theme-pink .tile .qty-badge { background: var(--brand-dark); border: 3px solid #fff; }
+  .theme-pink .quick button { background: #fff0f6; border-color: #fcc2d7; }
+  .theme-pink .keypad button { background: #fff0f6; }
+  .theme-pink .keypad button:active { background: #ffdeeb; }
+  .theme-pink .total-line .big { font-family: var(--head); font-weight: 400; }
+  .theme-pink .pay-btn { border-radius: 999px; box-shadow: 0 6px 0 #127a40; font-family: var(--head); font-weight: 400; }
+  .theme-pink .pay-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 #127a40; }
+  .theme-pink .change-box { border-radius: 22px; }
+  .theme-pink .k-card { border-radius: 24px; border-color: var(--line); box-shadow: 0 5px 0 #fcc2d7; }
+  .theme-pink .k-card .no { font-family: var(--head); font-weight: 400; color: var(--brand-dark); }
+  .theme-pink .k-card .ready-btn { border-radius: 999px; font-family: var(--head); font-weight: 400; }
+  .theme-pink .summary-bar .chip { border-radius: 999px; }
+  .theme-pink .tabs button, .theme-pink .seg button { background: #ffe3ef; border-radius: 999px; }
+  .theme-pink .tabs button.on, .theme-pink .seg button.on { background: var(--brand); color: #fff; }
+  .theme-pink .mgr-col { background: #ffe3ef; }
+  .theme-pink .m-card { border-radius: 18px; }
+  .theme-pink .m-no, .theme-pink .d-no, .theme-pink .stat .v, .theme-pink .done-no { font-family: var(--head); font-weight: 400; }
+  .theme-pink th { background: #ffe3ef; }
+  .theme-pink .modal { border-radius: 26px; border: 4px solid #fcc2d7; }
+  .theme-pink .toast { background: var(--brand-dark); }
+  .theme-pink .theme-pick button.on { border-color: var(--brand); box-shadow: 0 0 0 3px #fcc2d7; }
+  /* 호출 모니터 (분홍 가게) */
+  .theme-pink body.display-mode { background: #ffdeeb; color: var(--ink); }
+  .theme-pink .display { background: linear-gradient(180deg, #fff0f6 0%, #ffdeeb 100%); position: relative; }
+  .theme-pink .display::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4vh; background: repeating-linear-gradient(90deg, #f783ac 0 6vh, #fff 6vh 12vh); }
+  .theme-pink .display .title { font-family: var(--head); font-weight: 400; color: var(--brand); text-shadow: .4vh .4vh 0 #fff; margin-top: 2vh; }
+  .theme-pink .display .label { color: var(--muted); }
+  .theme-pink .display .current { font-family: var(--head); font-weight: 400; color: var(--brand); text-shadow: 1vh 1vh 0 #fff; }
+  .theme-pink .display .current.flash { animation-name: flashPink; }
+  @keyframes flashPink { 0%,100% { transform: scale(1); color: #e64980; } 50% { transform: scale(1.18); color: #7048e8; } }
+  .theme-pink .display .msg { background: #fff; border: .4vh solid #f783ac; border-radius: 999px; padding: .4vh 3vh; color: var(--ink); }
+  .theme-pink .display .board { background: #fff; border: .4vh solid #fcc2d7; }
+  .theme-pink .display .board.cooking h3 { color: #e8590c; }
+  .theme-pink .display .board.done h3 { color: #2b8a3e; }
+  .theme-pink .display .board h3 small { color: var(--muted); }
+  .theme-pink .display .chip { background: #fff0f6; color: var(--ink); }
+  .theme-pink .display .cooking .chip { border-color: #ffc078; }
+  .theme-pink .display .done .chip { border-color: #8ce99a; color: #2b8a3e; }
+  .theme-pink .display .done .chip.now { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .theme-pink .display .board .none, .theme-pink .display .foot { color: var(--muted); }
+  .theme-pink .display-exit { color: rgba(0,0,0,.2); }
+  .theme-pink .start-overlay { background: rgba(194,37,92,.92); }
 </style>
 
 <style id="theme-cup-pop">
@@ -442,14 +617,14 @@
 </head>
 <body>
 <header class="topbar" id="topbar">
-  <h1>🍜 슈의 라면 가게</h1>
+  <h1><img class="logo" src="img/sue-face.webp" alt="">슈의 라면 가게</h1>
   <span class="role-tag" id="roleTag"></span>
   <span class="spacer"></span>
   <span class="net" id="netTag">연결됨</span>
   <button onclick="changeRole()">역할 변경</button>
 </header>
 <main id="app"></main>
-<footer class="app-foot">Made by 정우쌤</footer>
+<footer class="app-foot"><img src="img/teacher-face.webp" alt="">Made by 정우쌤</footer>
 <div id="modalRoot"></div>
 <div id="toastRoot"></div>
 
@@ -491,7 +666,7 @@ const CONFIG = {
     lateMinutes: 5,                        // 조리 지연 강조 기준 (분)
     pickupLateMinutes: 3,                  // 미수령 강조 기준 (조리 완료 후, 분)
     threshold: 10,                         // 재고 부족 경고 기본 임계값
-    theme: 'original',                     // 화면 테마: 'original' | 'cup' (설정 탭에서 변경, 모든 기기 공유)
+    theme: 'original',                     // 화면 테마: 'original' | 'cup' | 'pink' (설정 탭에서 변경, 모든 기기 공유)
   },
   undoSeconds: 6,                          // "준비 완료" 되돌리기 가능 시간 (초)
   longPressMs: 550,                        // 메뉴 타일 길게 누르기 판정 시간
@@ -516,9 +691,9 @@ const ROLES = {
   ...Object.fromEntries(Array.from({ length: CONFIG.cashierCount }, (_, i) => [
     `order${i + 1}`, { label: `결제 ${i + 1}`, icon: '💰', desc: `주문번호 ${rangeText(i + 1)} · 거스름돈 계산` },
   ])),
-  kitchen: { label: '조리대', icon: '🍳', desc: '대기 주문 · 준비 완료' },
+  kitchen: { label: '조리대', icon: '🍳', img: 'img/sue-face.webp', desc: '대기 주문 · 준비 완료' },
   display: { label: '호출',   icon: '📢', desc: '손님용 번호 호출 화면' },
-  manager: { label: '매니저', icon: '🧑‍🏫', desc: '결제부터 수령까지 전체 주문 관리' },
+  manager: { label: '매니저', icon: '🧑‍🏫', img: 'img/teacher-face.webp', desc: '결제부터 수령까지 전체 주문 관리' },
   admin:   { label: '설정·정산', icon: '⚙️', desc: '메뉴·재고·매출 관리' },
 };
 
@@ -542,10 +717,12 @@ const itemsText = (items) => items.map((i) => `${i.name}×${i.qty}`).join(', ');
 const THEMES = {
   original: { label: '오리지널', desc: '따뜻한 크림 바탕의 기본 디자인', sw: ['#fff8ef', '#d9480f', '#1d1a17', '#2b8a3e'] },
   cup:      { label: '컵라면 팝', desc: '굵은 외곽선 · 원색 · 스티커 그림자', sw: ['#ffd23f', '#ff3d2e', '#7fd8ff', '#111111'] },
+  pink:     { label: '슈 핑크', desc: '포스터처럼 줄무늬 차양 · 하트 · 파스텔 핑크', sw: ['#fff0f6', '#f783ac', '#e64980', '#4a1d34'] },
 };
 function applyTheme(t) {
   const key = THEMES[t] ? t : 'original';
   document.documentElement.classList.toggle('theme-cup', key === 'cup');
+  document.documentElement.classList.toggle('theme-pink', key === 'pink');
   try { localStorage.setItem('ramen-pos-theme', key); } catch {}
 }
 
@@ -934,13 +1111,19 @@ function renderApp() {
   $('#roleTag').textContent = role ? `${ROLES[role].icon} ${ROLES[role].label}` : '역할 선택';
   if (!role) {
     $('#app').innerHTML = `
-      <div style="text-align:center;margin-top:24px">
-        <h2 style="font-size:28px">이 기기의 역할을 선택하세요</h2>
-        <div style="color:var(--muted)">선택값은 이 기기에 저장되어 새로고침해도 유지됩니다.</div>
-      </div>
+      <section class="hero">
+        <div><img class="duo bob" src="img/duo-chef.webp" alt="정우쌤과 슈"></div>
+        <div class="mid">
+          <span class="class">3학년 4반</span>
+          <h2>슈<span>의</span> 라면 가게</h2>
+          <span class="bubble down">어서 오세요~ 오늘도 맛있게 끓여 드릴게요! 🍜</span>
+          <div class="pick"><b>이 기기의 역할을 선택하세요</b>선택값은 이 기기에 저장되어 새로고침해도 유지됩니다.</div>
+        </div>
+        <div><img class="sue" src="img/sue.webp" alt="슈"></div>
+      </section>
       <div class="role-grid">
         ${Object.entries(ROLES).map(([k, v]) => `
-          <button onclick="setRole('${k}')"><span>${v.icon}</span>${v.label}<small>${v.desc}</small></button>`).join('')}
+          <button onclick="setRole('${k}')">${v.img ? `<img class="ri" src="${v.img}" alt="">` : `<span>${v.icon}</span>`}${v.label}<small>${v.desc}</small></button>`).join('')}
       </div>`;
     return;
   }
@@ -1099,7 +1282,7 @@ const Cashier = {
                   <span>×${i.qty}</span>
                   <span style="width:100px;text-align:right">${money(i.price * i.qty)}</span>
                   <button class="del" onclick="Cashier.remove('${i.menuId}')">✕</button>
-                </div>`).join('') : '<div style="color:var(--muted);padding:12px 0">메뉴를 탭하면 추가됩니다. (길게 누르면 수량 입력)</div>'}
+                </div>`).join('') : '<div class="cart-hint"><img src="img/sue.webp" alt=""><span class="bubble">메뉴를 탭하면 추가돼요!<br><small style="font-weight:400;color:var(--muted)">길게 누르면 수량 입력</small></span></div>'}
             </div>
             <div class="total-line"><span>총 결제 금액</span><span class="big">${money(total)}</span></div>
           </div>
@@ -1241,8 +1424,9 @@ const Cashier = {
     this.render();
     const m = openModal(`
       <h2 style="text-align:center">주문번호</h2>
-      <div class="done-no">${no}</div>
-      <div style="text-align:center;font-size:20px">식권에 <b>${no}번</b>을 적어 전달하세요</div>
+      <div class="done-wrap"><img class="hop" src="img/duo-pixel.webp" alt=""><div class="done-no">${no}</div></div>
+      <div class="done-thanks"><span class="bubble down">맛있게 드세요! 💕</span></div>
+      <div style="text-align:center;font-size:20px;margin-top:8px">식권에 <b>${no}번</b>을 적어 전달하세요</div>
       ${(no - 1) % CONFIG.orderBlockSize === CONFIG.orderBlockSize - 1 ? `
         <div style="text-align:center;margin-top:10px;padding:10px;border-radius:12px;background:#fff3bf;font-size:18px;font-weight:700">
           📢 이 계산대의 ${no - CONFIG.orderBlockSize + 1}~${no}번을 다 썼어요!<br>다음 손님은 <b>${no + (CONFIG.cashierCount - 1) * CONFIG.orderBlockSize + 1}번</b>부터예요.</div>` : ''}
@@ -1282,7 +1466,7 @@ const Kitchen = {
           <div class="head"><span class="no">${o.orderNo}</span><span class="elapsed"></span></div>
           ${items(o)}${memo(o)}
           <button class="ready-btn" onclick="orderAction('ready','${o.id}')">준비 완료</button>
-        </div>`).join('')}</div>` : '<div class="empty">🍜 조리할 주문이 없습니다</div>'}
+        </div>`).join('')}</div>` : `<div class="k-idle"><img src="img/sue-kitchen.webp" alt="슈의 라면집"><div><div class="t">🍜 조리할 주문이 없습니다</div><div class="s">새 주문이 들어오면 여기에 바로 나타나요.<br>잠깐 숨 돌리고 물을 끓여 두세요!</div></div></div>`}
       <h2 class="k-section">🔔 수령 대기 <small>식권을 받고 라면을 건넨 뒤 [수령 완료]를 누르세요</small></h2>
       ${pickup.length ? `<div class="kitchen-grid">${pickup.map((o) => `
         <div class="k-card pickup" data-since="${o.readyAt}" data-kind="pickup">
@@ -1674,9 +1858,12 @@ const Display = {
       : `<div class="none">${isDone ? '아직 완료된 주문이 없어요' : '조리 중인 주문이 없어요'}</div>`;
     $('#app').innerHTML = `
       <div class="display">
+        <img class="mascot l" src="img/duo-chef.webp" alt="">
+        <img class="mascot r ${this.flashNo != null ? 'calling' : 'bob'}" src="img/sue.webp" alt="">
+        <span class="bubble say">${cur != null ? `${cur}번 손님~ 받아 가세요!` : '맛있게 끓이는 중이에요~'}</span>
         <div class="title">🍜 ${esc(CONFIG.storeName)} 🍜</div>
         <div class="label">${cur != null ? '호출 번호' : ''}</div>
-        <div class="current ${this.flashNo != null ? 'flash' : ''}" id="dispCur">${cur != null ? cur : '🍜'}</div>
+        <div class="current ${this.flashNo != null ? 'flash' : ''}" id="dispCur">${cur != null ? cur : '<img class="idle-img" src="img/duo-pixel.webp" alt="">'}</div>
         <div class="msg">${cur != null ? `${cur}번 손님, 라면이 준비되었습니다!` : '주문하신 라면을 맛있게 끓이고 있어요'}</div>
         <div class="boards">
           <div class="board cooking"><h3>🔥 조리 중 <small>${cooking.length}건 · 주문 순서</small></h3>${chips(cooking, false)}</div>
@@ -1686,6 +1873,7 @@ const Display = {
       </div>
       ${this.started ? '' : `
         <div class="start-overlay" onclick="Display.start()">
+          <img src="img/duo-chef.webp" alt="">
           📢 화면을 터치하여 호출 화면 시작
           <small>소리 재생 허용과 전체화면 전환을 위해 한 번 터치가 필요합니다</small>
         </div>`}
@@ -2133,6 +2321,17 @@ const Admin = {
               </button>`).join('')}
           </div>
           <div style="color:var(--muted);font-size:14px;margin-top:8px">테마는 모든 기기(결제·조리대·호출·매니저)에 바로 적용됩니다.</div>
+        </div>
+        <div class="card">
+          <h2>우리 가게</h2>
+          <div class="about">
+            <a href="img/poster.webp" target="_blank" rel="noopener" title="포스터 크게 보기"><img class="poster" src="img/poster.webp" alt="슈의 라면가게 포스터"></a>
+            <div>
+              <div style="font-size:18px;font-weight:700">${esc(CONFIG.storeName)}</div>
+              <div style="color:var(--muted);margin-top:4px">포스터를 누르면 크게 열려요. 부스 앞 안내판이나 인쇄용으로 쓰세요.</div>
+              <div class="people"><img src="img/teacher.webp" alt="정우쌤"><img src="img/duo-pixel.webp" alt="정우쌤과 슈"><img src="img/sue.webp" alt="슈" style="height:100px"></div>
+            </div>
+          </div>
         </div>
         <div class="card">
           <h2>결제 화면</h2>
