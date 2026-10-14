@@ -82,5 +82,6 @@ python -m http.server 8304
 | `sue-face.webp` · `teacher-face.webp` | 상단 로고, 역할 버튼, 바닥글 |
 | `poster.webp` · `teacher.webp` | 설정 탭 "우리 가게" |
 | `favicon.png` | 브라우저 탭 아이콘 |
+| `og-image.jpg` | 링크 공유 미리보기 (카톡·문자 등, 1200×630). 사이트 주소가 바뀌면 `index.html`의 `og:` 주소도 바꾸기 |
 
 Made by 정우쌤
