@@ -164,6 +164,51 @@
   .k-card.pickup ul { font-size: 18px; }
   .k-card .ready-btn.pick { background: var(--info); }
   .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  /* 조리대: 왼쪽 주문 + 오른쪽 타이머 (결제 화면의 계산기 자리) */
+  .kitchen-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+  .kitchen-layout .kitchen-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .k-side { display: flex; flex-direction: column; gap: 12px; }
+  @media (max-width: 1000px) { .kitchen-layout { grid-template-columns: 1fr; } }
+  .t-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .t-head h2 { margin: 0; }
+  .t-entry { font-size: 46px; font-weight: 900; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: 2px;
+    border: 2px solid var(--line); border-radius: 14px; padding: 4px 0; margin-bottom: 8px; background: #fffdf9; }
+  .t-entry.zero { color: var(--muted); }
+  .t-side .quick { grid-template-columns: repeat(4, 1fr); }
+  .t-side .keypad button { height: 48px; font-size: 23px; }
+  .t-side .quick button { padding: 12px 4px; }
+  .t-start { width: 100%; margin-top: 10px; padding: 15px; font-size: 24px; font-weight: 900; border-radius: 14px; background: var(--ok); color: #fff; }
+  .t-mute { margin-top: 8px; font-size: 14px; color: var(--danger); font-weight: 700; text-align: center; }
+  .t-list { display: flex; flex-direction: column; gap: 10px; max-height: 40vh; overflow-y: auto; padding: 2px 6px 6px 2px; margin-right: -6px; }
+  .t-list .none { color: var(--muted); text-align: center; padding: 10px 0; }
+  .t-item { border: 3px solid var(--line); border-radius: 14px; padding: 10px 12px; background: var(--panel); }
+  .t-item .top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .t-item .lb { font-size: 18px; font-weight: 900; }
+  .t-item .left { font-size: 40px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .t-item .bar { height: 8px; border-radius: 4px; background: #eee3d6; overflow: hidden; margin: 6px 0 8px; }
+  .t-item .bar i { display: block; height: 100%; background: var(--ok); width: 100%; transition: width .25s linear; }
+  .t-item.soon .bar i { background: var(--warn); }
+  .t-item.soon .left { color: var(--warn); }
+  .t-item.paused .left { color: var(--muted); }
+  .t-item .acts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .t-item .acts .btn { padding: 10px 4px; font-size: 16px; }
+  .t-item.done { border-color: var(--danger); background: #fff5f5; animation: pulse 1s infinite; }
+  .t-item.done .left { color: var(--danger); }
+  .t-item.done .acts { grid-template-columns: 2fr 1fr; }
+  .k-card .k-tmr { padding: 10px; font-size: 16px; }
+  .k-card .k-tmr.on { border-color: var(--ok); color: var(--ok); font-weight: 900; }
+  .k-card .k-tmr.ring { border-color: var(--danger); background: #fff5f5; color: var(--danger); font-weight: 900; }
+  .theme-cup .t-entry, .theme-cup .t-item { border: 3px solid #111; box-shadow: var(--shadow-s); font-family: var(--head); font-weight: 400; }
+  .theme-cup .t-item .lb { font-family: 'Noto Sans KR', sans-serif; }
+  .theme-cup .t-item .bar { border: 2px solid #111; height: 12px; }
+  .theme-cup .t-item.done { background: #ffd9d4; animation: none; box-shadow: 4px 4px 0 var(--danger); }
+  .theme-cup .t-start { border: 3px solid #111; color: #111; font-family: var(--head); font-weight: 400; box-shadow: var(--shadow-s); }
+  .theme-cup .t-start:active { transform: translate(3px,3px); box-shadow: none; }
+  .theme-pink .t-entry { border-color: var(--line); background: #fff; font-family: var(--head); font-weight: 400; color: var(--brand-dark); }
+  .theme-pink .t-item { border-radius: 18px; box-shadow: 0 4px 0 #fcc2d7; }
+  .theme-pink .t-item .left { font-family: var(--head); font-weight: 400; }
+  .theme-pink .t-item .bar { background: #ffe3ef; }
+  .theme-pink .t-start { border-radius: 999px; box-shadow: 0 6px 0 #127a40; font-family: var(--head); font-weight: 400; }
   .summary-bar .chip { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; padding: 8px 14px; font-size: 18px; font-weight: 700; }
 
   /* ---------- 호출 화면 ---------- */
@@ -686,6 +731,7 @@ const CONFIG = {
     lateMinutes: 5,                        // 조리 지연 강조 기준 (분)
     pickupLateMinutes: 3,                  // 미수령 강조 기준 (조리 완료 후, 분)
     threshold: 10,                         // 재고 부족 경고 기본 임계값
+    kitchenTimers: [180, 240, 300],        // 조리대 타이머 빠른 버튼 (초). 설정 탭에서 수정
     theme: 'original',                     // 화면 테마: 'original' | 'cup' | 'pink' (설정 탭에서 변경, 모든 기기 공유)
   },
   undoSeconds: 6,                          // "준비 완료" 되돌리기 가능 시간 (초)
@@ -1475,7 +1521,13 @@ const Kitchen = {
     const memo = (o) => (o.memo ? `<div class="memo">📝 ${esc(o.memo)}</div>` : '');
     const items = (o) => `<ul>${o.items.map((i) => `<li><span>${esc(i.name)}</span><span>×${i.qty}</span></li>`).join('')}</ul>`;
 
-    $('#app').innerHTML = `
+    // 타이머 칸은 처음 한 번만 만들고, 주문이 바뀔 때는 왼쪽 주문 영역만 다시 그린다
+    // (타이머 버튼을 누르는 도중 화면이 다시 그려지지 않도록)
+    if (!$('#kMain')) {
+      $('#app').innerHTML = `<div class="kitchen-layout"><div id="kMain"></div><aside class="k-side t-side" id="kTimer"></aside></div>`;
+      KTimer.mount();
+    }
+    $('#kMain').innerHTML = `
       <div class="summary-bar">
         <span class="chip">🔥 조리 중 <b>${waiting.length}</b>건</span>
         ${Object.entries(need).map(([n, q]) => `<span class="chip">${esc(n)} <b>${q}</b></span>`).join('')}
@@ -1485,6 +1537,7 @@ const Kitchen = {
         <div class="k-card" data-since="${o.createdAt}" data-kind="cook">
           <div class="head"><span class="no">${o.orderNo}</span><span class="elapsed"></span></div>
           ${items(o)}${memo(o)}
+          <button class="btn ghost k-tmr" data-no="${o.orderNo}" onclick="KTimer.startFor(${o.orderNo})">⏱ ${o.orderNo}번 타이머 (${mmss(KTimer.presets()[0])})</button>
           <button class="ready-btn" onclick="orderAction('ready','${o.id}')">준비 완료</button>
         </div>`).join('')}</div>` : `<div class="k-idle"><img src="img/sue-kitchen.webp" alt="슈의 라면집"><div><div class="t">🍜 조리할 주문이 없습니다</div><div class="s">새 주문이 들어오면 여기에 바로 나타나요.<br>잠깐 숨 돌리고 물을 끓여 두세요!</div></div></div>`}
       <h2 class="k-section">🔔 수령 대기 <small>식권을 받고 라면을 건넨 뒤 [수령 완료]를 누르세요</small></h2>
@@ -1495,6 +1548,7 @@ const Kitchen = {
           <button class="ready-btn pick" onclick="orderAction('pick','${o.id}')">수령 완료</button>
         </div>`).join('')}</div>` : '<div class="empty small">수령 대기 중인 주문이 없습니다</div>'}`;
     this.tick();
+    KTimer.syncCards();
     if (!this.timer) this.timer = setInterval(() => this.tick(), 1000);
   },
 
@@ -1511,10 +1565,229 @@ const Kitchen = {
     });
   },
 
-  onData(name) { if (name !== 'adjustments') this.render(); },
-  leave() { clearInterval(this.timer); this.timer = null; },
+  onData(name) {
+    if (name === 'adjustments') return;
+    if (name === 'settings') KTimer.render();   // 빠른 버튼 시간이 바뀌었을 수 있음
+    this.render();
+  },
+  leave() { clearInterval(this.timer); this.timer = null; KTimer.unmount(); },
 };
 VIEWS.kitchen = Kitchen;
+
+/* =====================================================================
+   조리대 타이머 (KTimer) — 여러 개를 동시에 돌릴 수 있는 주방 타이머
+   - 이 기기에만 저장 (다른 기기와 공유하지 않음). 새로고침해도 이어서 돈다.
+   - 시간이 다 되면 카드가 깜빡이고 [확인]을 누를 때까지 알림음이 반복된다.
+   ===================================================================== */
+const mmss = (sec) => { const s = Math.max(0, Math.ceil(sec)); return `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`; };
+
+const KTimer = {
+  KEY: 'ramen-pos-kitchen-timers',
+  MAX: 8,
+  list: [],          // { id, label, total(초), endAt(ms) | null, left(ms, 일시정지 중), done }
+  digits: '',        // 입력 중인 시간 (전자레인지처럼 오른쪽부터: 3·0·0 → 03:00)
+  seq: 0,
+  ticker: null,
+  alarm: null,
+
+  load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(this.KEY) || '{}');
+      this.list = Array.isArray(d.list) ? d.list : [];
+      this.seq = d.seq || 0;
+    } catch { this.list = []; }
+  },
+  save() { try { localStorage.setItem(this.KEY, JSON.stringify({ list: this.list, seq: this.seq })); } catch {} },
+
+  presets() {
+    const p = (S.settings.kitchenTimers || CONFIG.defaults.kitchenTimers).filter((n) => n > 0);
+    return p.length ? p : CONFIG.defaults.kitchenTimers;
+  },
+  entrySec() {
+    const d = this.digits;
+    if (!d) return 0;
+    return Number(d.slice(0, -2) || 0) * 60 + Number(d.slice(-2));
+  },
+  setEntry(sec) {
+    sec = Math.min(Math.max(0, Math.round(sec)), 99 * 60 + 59);
+    this.digits = sec ? String(Math.floor(sec / 60)) + pad2(sec % 60) : '';
+    if (this.digits.startsWith('0')) this.digits = this.digits.replace(/^0+/, '');
+  },
+  leftMs(t) { return t.endAt ? t.endAt - Date.now() : t.left; },
+
+  // 오디오는 사용자가 화면을 한 번 터치해야 켜진다 (브라우저 정책)
+  ensureAudio() { if (!Sound.ctx || Sound.ctx.state !== 'running') { Sound.unlock(); setTimeout(() => this.renderMute(), 300); } },
+
+  mount() {
+    this.load();
+    this.render();
+    clearInterval(this.ticker);
+    this.ticker = setInterval(() => this.tick(), 250);
+    this.tick();
+    this.checkAlarm();   // 새로고침 전에 끝난 타이머가 있으면 다시 알림
+    this._unlock = () => this.ensureAudio();
+    document.addEventListener('pointerdown', this._unlock, { once: true });
+  },
+  unmount() {
+    clearInterval(this.ticker); this.ticker = null;
+    this.stopAlarm();
+    if (this._unlock) document.removeEventListener('pointerdown', this._unlock);
+  },
+
+  /* ---------- 입력 ---------- */
+  key(k) {
+    if (k === 'C') this.digits = '';
+    else if (k === 'B') this.digits = this.digits.slice(0, -1);
+    else if (this.digits.length < 4) this.digits = (this.digits + k).replace(/^0+/, '');
+    this.renderEntry();
+  },
+  preset(sec) { this.setEntry(sec); this.renderEntry(); },
+  addEntry(sec) { this.setEntry(this.entrySec() + sec); this.renderEntry(); },
+
+  /* ---------- 타이머 조작 ---------- */
+  create(sec, label) {
+    this.ensureAudio();
+    if (!(sec > 0)) { toast('시간을 입력하세요'); return false; }
+    if (this.list.length >= this.MAX) { toast(`타이머는 최대 ${this.MAX}개까지 돌릴 수 있어요`); return false; }
+    this.seq += 1;
+    this.list.push({ id: uid(), label: label || `타이머 ${this.seq}`, total: sec, endAt: Date.now() + sec * 1000, left: sec * 1000, done: false });
+    this.save(); this.render();
+    return true;
+  },
+  start() {
+    if (this.create(this.entrySec())) { this.digits = ''; this.renderEntry(); }
+  },
+  startFor(no) {
+    const label = `${no}번`;
+    const cur = this.list.find((t) => t.label === label);
+    if (cur && cur.done) { this.remove(cur.id); return; }   // 다 된 타이머 → 누르면 확인(끄기)
+    if (cur) { toast(`${label} 타이머가 이미 돌고 있어요 (오른쪽 목록에서 조작)`); return; }
+    if (this.create(this.presets()[0], label)) toast(`⏱ ${label} 타이머 시작 (${mmss(this.presets()[0])})`);
+  },
+  find(id) { return this.list.find((t) => t.id === id); },
+  toggle(id) {
+    const t = this.find(id); if (!t || t.done) return;
+    this.ensureAudio();
+    if (t.endAt) { t.left = t.endAt - Date.now(); t.endAt = null; }
+    else t.endAt = Date.now() + t.left;
+    this.save(); this.render();
+  },
+  add(id, sec) {
+    const t = this.find(id); if (!t) return;
+    this.ensureAudio();
+    if (t.done) { t.done = false; t.endAt = Date.now() + sec * 1000; t.total = sec; }
+    else if (t.endAt) t.endAt += sec * 1000;
+    else t.left += sec * 1000;
+    t.total = Math.max(t.total, this.leftMs(t) / 1000);
+    this.save(); this.render(); this.checkAlarm();
+  },
+  restart(id) {
+    const t = this.find(id); if (!t) return;
+    t.done = false; t.endAt = Date.now() + t.total * 1000; t.left = t.total * 1000;
+    this.save(); this.render(); this.checkAlarm();
+  },
+  remove(id) {
+    this.list = this.list.filter((t) => t.id !== id);
+    this.save(); this.render(); this.checkAlarm();
+  },
+
+  /* ---------- 진행 · 알림 ---------- */
+  tick() {
+    let changed = false;
+    this.list.forEach((t) => {
+      if (!t.done && t.endAt && t.endAt <= Date.now()) { t.done = true; t.endAt = null; t.left = 0; changed = true; }
+    });
+    if (changed) { this.save(); this.render(); this.checkAlarm(); return; }
+    this.list.forEach((t) => {
+      const el = document.querySelector(`.t-item[data-id="${t.id}"]`);
+      if (!el || t.done) return;
+      const ms = this.leftMs(t);
+      el.querySelector('.left').textContent = mmss(ms / 1000);
+      el.querySelector('.bar i').style.width = `${Math.max(0, Math.min(100, (ms / 1000 / t.total) * 100))}%`;
+      el.classList.toggle('soon', ms <= 30000);
+    });
+    this.syncCards();
+  },
+  // 주문 카드의 [⏱ 타이머] 버튼에 남은 시간 표시
+  syncCards() {
+    document.querySelectorAll('.k-card .k-tmr').forEach((b) => {
+      const t = this.list.find((x) => x.label === `${b.dataset.no}번`);
+      const txt = !t ? `⏱ ${b.dataset.no}번 타이머 (${mmss(this.presets()[0])})`
+        : t.done ? `⏰ ${b.dataset.no}번 시간 다 됐어요!`
+        : `⏱ ${b.dataset.no}번 남은 시간 ${mmss(this.leftMs(t) / 1000)}${t.endAt ? '' : ' (정지)'}`;
+      if (b.textContent !== txt) b.textContent = txt;
+      b.classList.toggle('on', !!t && !t.done);
+      b.classList.toggle('ring', !!t && t.done);
+    });
+  },
+  checkAlarm() {
+    const ringing = this.list.some((t) => t.done);
+    if (ringing && !this.alarm) {
+      const ring = () => { Sound.beep(); try { navigator.vibrate?.([200, 100, 200]); } catch {} };
+      ring();
+      this.alarm = setInterval(ring, 1500);
+    } else if (!ringing) this.stopAlarm();
+  },
+  stopAlarm() { clearInterval(this.alarm); this.alarm = null; },
+
+  /* ---------- 그리기 ---------- */
+  renderEntry() {
+    const el = $('#tEntry'); if (!el) return;
+    const d = this.digits.padStart(4, '0');
+    el.textContent = `${d.slice(0, 2)}:${d.slice(2)}`;
+    el.classList.toggle('zero', !this.digits);
+    $('#tStart').disabled = !this.entrySec();
+  },
+  renderMute() {
+    const el = $('#tMute'); if (!el) return;
+    el.classList.toggle('hidden', !!(Sound.ctx && Sound.ctx.state === 'running'));
+  },
+  itemHtml(t) {
+    const ms = this.leftMs(t);
+    const pct = Math.max(0, Math.min(100, (ms / 1000 / t.total) * 100));
+    const cls = t.done ? 'done' : !t.endAt ? 'paused' : ms <= 30000 ? 'soon' : '';
+    const acts = t.done
+      ? `<button class="btn ok" onclick="KTimer.remove('${t.id}')">✅ 확인</button>
+         <button class="btn" onclick="KTimer.restart('${t.id}')">↻ 다시</button>`
+      : `<button class="btn" onclick="KTimer.toggle('${t.id}')">${t.endAt ? '⏸ 일시정지' : '▶ 계속'}</button>
+         <button class="btn" onclick="KTimer.add('${t.id}', 30)">+30초</button>
+         <button class="btn danger" onclick="KTimer.remove('${t.id}')">✕ 끄기</button>`;
+    return `
+      <div class="t-item ${cls}" data-id="${t.id}">
+        <div class="top"><span class="lb">${esc(t.label)}${!t.endAt && !t.done ? ' · 일시정지' : ''}</span>
+          <span class="left">${t.done ? '완료!' : mmss(ms / 1000)}</span></div>
+        <div class="bar"><i style="width:${t.done ? 0 : pct}%"></i></div>
+        <div class="acts">${acts}</div>
+      </div>`;
+  },
+  render() {
+    const el = $('#kTimer'); if (!el) return;
+    const order = (t) => (t.done ? -1 : this.leftMs(t) + (t.endAt ? 0 : 1e9));   // 완료 → 곧 끝남 → 일시정지 순
+    const list = [...this.list].sort((a, b) => order(a) - order(b));
+    el.innerHTML = `
+      <div class="card">
+        <div class="t-head"><h2>⏱ 타이머 <small style="font-size:15px;color:var(--muted)">${this.list.length}/${this.MAX}</small></h2><small style="color:var(--muted)">이 기기에만 저장</small></div>
+        <div class="t-list">${list.length ? list.map((t) => this.itemHtml(t)).join('') : '<div class="none">돌아가는 타이머가 없어요.<br>아래에서 시간을 고르고 [타이머 시작]을 누르세요.</div>'}</div>
+      </div>
+      <div class="card">
+        <div class="t-head"><h2>새 타이머</h2></div>
+        <div class="t-entry" id="tEntry"></div>
+        <div class="quick">
+          ${this.presets().slice(0, 3).map((p) => `<button onclick="KTimer.preset(${p})">${p % 60 ? mmss(p) : `${p / 60}분`}</button>`).join('')}
+          <button onclick="KTimer.addEntry(30)">+30초</button>
+        </div>
+        <div class="keypad">
+          ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button onclick="KTimer.key('${n}')">${n}</button>`).join('')}
+          <button onclick="KTimer.key('C')">C</button><button onclick="KTimer.key('0')">0</button><button onclick="KTimer.key('B')">⌫</button>
+        </div>
+        <button class="t-start" id="tStart" onclick="KTimer.start()">▶ 타이머 시작</button>
+        <div class="t-mute hidden" id="tMute">🔇 화면을 한 번 터치하면 알림음이 켜져요</div>
+      </div>`;
+    this.renderEntry();
+    this.renderMute();
+    this.syncCards();
+  },
+};
 
 /* =====================================================================
    매니저 화면 (Manager) — 결제부터 수령까지 전체 흐름을 한눈에 보고 관리
@@ -1845,6 +2118,25 @@ const Sound = {
       setTimeout(finish, 8000);   // 일부 브라우저에서 onend 가 오지 않는 경우 대비
       speechSynthesis.cancel();
       speechSynthesis.speak(u);
+    });
+  },
+
+  // 조리대 타이머 알림음: 짧은 "삐삐삐"
+  beep() {
+    if (!this.ctx || this.ctx.state !== 'running') return;
+    const vol = Math.max(0.05, Number(S.settings.ttsVolume ?? 1)) * 0.25;
+    const t0 = this.ctx.currentTime + 0.02;
+    [0, 0.22, 0.44].forEach((d) => {
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = 1046.5;   // C6
+      g.gain.setValueAtTime(0.0001, t0 + d);
+      g.gain.exponentialRampToValueAtTime(vol, t0 + d + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.16);
+      o.connect(g).connect(this.ctx.destination);
+      o.start(t0 + d);
+      o.stop(t0 + d + 0.2);
     });
   },
 
@@ -2369,7 +2661,10 @@ const Admin = {
               <input type="number" min="1" value="${st.lateMinutes}" onchange="Admin.saveNum('lateMinutes', this.value)"></div>
             <div class="field" style="max-width:260px"><label>미수령 강조 기준 (조리 완료 후, 분)</label>
               <input type="number" min="1" value="${st.pickupLateMinutes}" onchange="Admin.saveNum('pickupLateMinutes', this.value)"></div>
+            <div class="field" style="flex:1;min-width:240px"><label>조리대 타이머 빠른 버튼 (분 또는 분:초, 쉼표로 구분 · 최대 3개)</label>
+              <input value="${esc((st.kitchenTimers || CONFIG.defaults.kitchenTimers).map((x) => (x % 60 ? mmss(x) : x / 60)).join(', '))}" onchange="Admin.saveTimers(this.value)"></div>
           </div>
+          <div style="color:var(--muted);font-size:14px;margin-top:8px">첫 번째 시간은 조리대 주문 카드의 [⏱ 타이머] 버튼에도 쓰입니다.</div>
         </div>
         <div class="card">
           <h2>호출 화면 소리</h2>
@@ -2409,6 +2704,15 @@ const Admin = {
     if (!THEMES[key]) return;
     applyTheme(key);
     await run(() => DB.saveSettings({ theme: key }), `'${THEMES[key].label}' 테마로 바꿨습니다`);
+  },
+
+  async saveTimers(value) {
+    const list = value.split(/[,\s]+/).filter(Boolean).map((v) => {
+      if (v.includes(':')) { const [m, sec] = v.split(':').map(Number); return m * 60 + sec; }
+      return Math.round(Number(v) * 60);
+    }).filter((n) => n > 0 && n < 100 * 60).slice(0, 3);
+    if (!list.length) { toast('시간을 1개 이상 입력하세요 (예: 3, 4, 4:30)'); this.render(); return; }
+    await run(() => DB.saveSettings({ kitchenTimers: list }), '저장했습니다 (최대 3개)');
   },
 
   async saveQuick(value) {
